@@ -5,7 +5,7 @@ import ast
 # Load product details from CSV
 @st.cache_data
 def load_data():
-    return pd.read_csv("combined_dataset.csv")
+    return pd.read_csv("combined_data.csv")
 
 df = load_data()
 
@@ -25,62 +25,50 @@ category_names = {
 
 # Reusable component to render product card
 def render_product_card(product):
-    with st.container():
-        col1, col2 = st.columns([1, 2])
+    st.markdown(f"<h3 style='font-weight:700'>{product.get('productName', '')}</h3>", unsafe_allow_html=True)
 
-        # Image slideshow on left
-        with col1:
-            
-            images = [
-                product.get("image_url_1"),
-                product.get("image_url_2"),
-                product.get("image_url_3"),
-                product.get("image_url_4"),
-                product.get("image_url_5"),
-            ]
-            
-            # Filter: keep only non-empty strings
-            images = [img for img in images if isinstance(img, str) and img.startswith("http")]
+    price = product.get("product_price")
+    if pd.notnull(price):
+        st.markdown(f"<p style='font-size:16px; color:gray'><strong>As low as ${price:.2f}</strong></p>", unsafe_allow_html=True)
 
-            if images:
-                st.image(images, width=180)
-            else:
-                st.markdown("No image available.")
+    # Image slideshow (carousel-like using st.image)
+    images = [
+        product.get("image_url_1"),
+        product.get("image_url_2"),
+        product.get("image_url_3"),
+        product.get("image_url_4"),
+        product.get("image_url_5")
+    ]
+    images = [img for img in images if isinstance(img, str) and img.startswith("http")]
+    if images:
+        st.image(images, width=600, caption=product.get("productName", "Product"))
 
-        # Product info on right
-        with col2:
-            st.subheader(product.get("productName", "Unnamed Product"))
-            st.markdown(f"**Brand:** {product.get('productBrand', 'N/A')}")
-            st.markdown(f"**Material:** {product.get('primaryMaterial', 'N/A')}")
-            st.markdown(f"**Color:** {product.get('colorName', 'N/A')}")
-            link = product.get("url_link")
-            if pd.notna(link):
-                st.markdown(f"**Link:** [View Product]({link})")
-            st.markdown("---")
+    # Optional fields
+    with st.expander("Product Details"):
+        if desc := product.get("description"):
+            st.markdown(f"**Description:** {desc}")
+        if brand := product.get("productBrand"):
+            st.markdown(f"**Brand:** {brand}")
+        if color := product.get("colorName"):
+            st.markdown(f"**Color:** {color}")
+        if material := product.get("primaryMaterial"):
+            st.markdown(f"**Material:** {material}")
 
-            # Price tiers
-            st.markdown("**Price Tiers:**")
-            price_data = {
-                "Min Qty": [],
-                "Max Qty": [],
-                "Price": []
-            }
-            for i in range(5):
-                min_q = product.get(f"ProductPrice_{i}_quantityMin")
-                max_q = product.get(f"ProductPrice_{i}_quantityMax")
-                price = product.get(f"ProductPrice_{i}_price")
-                if pd.notna(price):
-                    price_data["Min Qty"].append(min_q)
-                    price_data["Max Qty"].append(max_q)
-                    price_data["Price"].append(price)
-            if price_data["Price"]:
-                st.table(pd.DataFrame(price_data))
-            else:
-                st.markdown("No pricing data available.")
+    # Quantity and Price Table
+    pricing = []
+    for i in range(5):
+        qty = product.get(f"ProductPrice_{i}_quantityMin")
+        price = product.get(f"ProductPrice_{i}_price")
+        if pd.notnull(qty) and pd.notnull(price):
+            qty_str = f"{int(qty)}+" if i == 4 else f"{int(qty)}"
+            pricing.append((qty_str, f"${price:.2f}"))
 
-            desc = product.get("description")
-            if pd.notna(desc):
-                st.markdown(f"**Description:** {desc}")
+    if pricing:
+        st.markdown("#### **Pricing**")
+        table_md = "| Quantity | Price |\n|----------|-------|\n"
+        for qty, p in pricing:
+            table_md += f"| {qty} | {p} |\n"
+        st.markdown(table_md)
 
 # Render sections
 st.title("🎯 AI-Powered Product Recommendations")
