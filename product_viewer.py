@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import ast
+import requests
 
 # Load product details from CSV
 @st.cache_data
@@ -9,9 +9,7 @@ def load_data():
 
 df = load_data()
 
-# Get product IDs from app.py via session_state
-import requests
-
+# Get product IDs from the source JSON
 url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json"
 response = requests.get(url)
 recommended_ids = response.json()
@@ -31,9 +29,10 @@ def render_image_slideshow(images, product_id):
         if isinstance(img, str) and img.startswith("http"):
             image_tags += f"<div class='swiper-slide'><img src='{img}' style='width:100%; height:auto;'/></div>"
 
+    # --- CHANGE: Increased height from 420 to 600 ---
     st.components.v1.html(f"""
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
-    <div class="swiper-container" id="swiper-{product_id}">
+    <div class="swiper-container" id="swiper-{product_id}" style="height: 100%;">
         <div class="swiper-wrapper">
             {image_tags}
         </div>
@@ -55,74 +54,46 @@ def render_image_slideshow(images, product_id):
         }},
     }});
     </script>
-    """, height=420)
+    """, height=600)
 
-def render_product_card(product: Dict[str, Any]):
-    st.markdown("---")
-    images = [
-        product.get("image_url_1"),
-        product.get("image_url_2"),
-        product.get("image_url_3"),
-        product.get("image_url_4"),
-        product.get("image_url_5")
-    ]
-    images = [img for img in images if isinstance(img, str) and img.startswith("http")]
+def render_product_card(product):
+    # --- CHANGE: Swapped column ratios from [1, 2] to [2, 1] to make the image column larger ---
+    cols = st.columns([2, 1])
+    with cols[0]:
+        images = [product.get(f'image_url_{i}') for i in range(1, 6)]
+        images = [img for img in images if isinstance(img, str) and img.startswith("http")]
+        render_image_slideshow(images, product.get("productId", "unknown"))
 
-    image_key = f"image_index_{product['productId']}"
-    if image_key not in st.session_state:
-        st.session_state[image_key] = 0
-
-    left_col, right_col = st.columns([1.2, 2])
-
-    with left_col:
-        if images:
-            current_index = st.session_state[image_key]
-            st.image(images[current_index], width=400)
-            btn1, btn2, _ = st.columns([1, 1, 2])
-            with btn1:
-                if st.button("◀", key=f"prev_{product['productId']}"):
-                    st.session_state[image_key] = max(0, current_index - 1)
-            with btn2:
-                if st.button("▶", key=f"next_{product['productId']}"):
-                    st.session_state[image_key] = min(len(images) - 1, current_index + 1)
-
-    with right_col:
-        st.markdown(f"### **{product.get('productName', 'Unnamed Product')}**")
+    with cols[1]:
+        st.markdown(f"<h3 style='font-weight:700'>{product.get('productName', '')}</h3>", unsafe_allow_html=True)
 
         price = product.get("product_price")
-        if pd.notna(price):
-            st.markdown(f"#### 💲 As low as: **${price:.2f}**")
+        if pd.notnull(price):
+            st.markdown(f"<p style='font-size:16px; color:#444;'>As low as <strong>${price:.2f}</strong></p>", unsafe_allow_html=True)
 
-        brand = product.get("productBrand")
-        material = product.get("primaryMaterial")
-        color = product.get("colorName")
-
-        if brand:
+        if desc := product.get("description"):
+            st.markdown(f"**Description:** {desc}")
+        if brand := product.get("productBrand"):
             st.markdown(f"**Brand:** {brand}")
-        if material:
+        if color := product.get("colorName"):
+            st.markdown(f"**Color:** {color}")
+        if material := product.get("primaryMaterial"):
             st.markdown(f"**Material:** {material}")
-        if color:
-            st.markdown(f"**Available Colors:** {color}")
 
-        description = product.get("description")
-        if description:
-            st.markdown(f"**Description:** {description}")
-
-        price_data = []
+        pricing = []
         for i in range(5):
-            qty_min = product.get(f"ProductPrice_{i}_quantityMin")
+            qty = product.get(f"ProductPrice_{i}_quantityMin")
             price = product.get(f"ProductPrice_{i}_price")
-            if pd.notna(qty_min) and pd.notna(price):
-                label = f"{int(qty_min)}+" if i == 4 else str(int(qty_min))
-                price_data.append((label, f"${price:.2f}"))
+            if pd.notnull(qty) and pd.notnull(price):
+                qty_str = f"{int(qty)}+" if i == 4 else f"{int(qty)}"
+                pricing.append((qty_str, f"${price:.2f}"))
 
-        if price_data:
-            st.markdown("#### 📦 Price Tiers")
-            price_df = pd.DataFrame(price_data, columns=["Quantity", "Price"])
-            st.table(price_df)
-
-        if url := product.get("url_link"):
-            st.markdown(f"[🔗 View Product]({url})")
+        if pricing:
+            st.markdown("#### **Pricing**")
+            table_md = "| Quantity | Price |\n|----------|-------|\n"
+            for qty, p in pricing:
+                table_md += f"| {qty} | {p} |\n"
+            st.markdown(table_md)
 
 def render_section(title, df_section):
     st.markdown(f"<h2 style='border-bottom: 2px solid #ccc; padding-bottom: 4px; margin-top: 40px'>{title}</h2>", unsafe_allow_html=True)
@@ -130,11 +101,6 @@ def render_section(title, df_section):
         render_product_card(row)
         st.markdown("---")
 
-category_names = {
-    "Best": "Signature",
-    "Better": "Select",
-    "Good": "Standard"
-}
 
 if not any(recommended_ids.values()):
     st.warning("No recommendations found. Please go back to the main app and generate recommendations.")
@@ -149,4 +115,3 @@ else:
             section_df = section_df.copy()
             section_df["category"] = level  # Add category column if needed
             render_section(label, section_df)
-
