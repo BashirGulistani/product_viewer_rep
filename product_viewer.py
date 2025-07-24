@@ -15,7 +15,12 @@ df = load_data()
 
 # Get product IDs from the source JSON
 url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json"
-response = requests.get(url)
+headers = {
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache"
+}
+
+response = requests.get(url, headers=headers)
 recommended_ids = response.json()
 
 
