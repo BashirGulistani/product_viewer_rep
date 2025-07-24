@@ -22,6 +22,8 @@ def get_product_ids():
         }
 
 recommended_ids = get_product_ids()
+st.write("Loaded recommendation IDs:", recommended_ids)
+
 
 category_names = {
     "Best": "Signature",
