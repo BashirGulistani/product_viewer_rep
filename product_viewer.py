@@ -57,43 +57,72 @@ def render_image_slideshow(images, product_id):
     </script>
     """, height=420)
 
-def render_product_card(product):
-    cols = st.columns([1, 2])
-    with cols[0]:
-        images = [product.get(f'image_url_{i}') for i in range(1, 6)]
-        images = [img for img in images if isinstance(img, str) and img.startswith("http")]
-        render_image_slideshow(images, product.get("productId", "unknown"))
+def render_product_card(product: Dict[str, Any]):
+    st.markdown("---")
+    images = [
+        product.get("image_url_1"),
+        product.get("image_url_2"),
+        product.get("image_url_3"),
+        product.get("image_url_4"),
+        product.get("image_url_5")
+    ]
+    images = [img for img in images if isinstance(img, str) and img.startswith("http")]
 
-    with cols[1]:
-        st.markdown(f"<h3 style='font-weight:700'>{product.get('productName', '')}</h3>", unsafe_allow_html=True)
+    image_key = f"image_index_{product['productId']}"
+    if image_key not in st.session_state:
+        st.session_state[image_key] = 0
+
+    left_col, right_col = st.columns([1.2, 2])
+
+    with left_col:
+        if images:
+            current_index = st.session_state[image_key]
+            st.image(images[current_index], width=400)
+            btn1, btn2, _ = st.columns([1, 1, 2])
+            with btn1:
+                if st.button("◀", key=f"prev_{product['productId']}"):
+                    st.session_state[image_key] = max(0, current_index - 1)
+            with btn2:
+                if st.button("▶", key=f"next_{product['productId']}"):
+                    st.session_state[image_key] = min(len(images) - 1, current_index + 1)
+
+    with right_col:
+        st.markdown(f"### **{product.get('productName', 'Unnamed Product')}**")
 
         price = product.get("product_price")
-        if pd.notnull(price):
-            st.markdown(f"<p style='font-size:16px; color:#444;'>As low as <strong>${price:.2f}</strong></p>", unsafe_allow_html=True)
+        if pd.notna(price):
+            st.markdown(f"#### 💲 As low as: **${price:.2f}**")
 
-        if desc := product.get("description"):
-            st.markdown(f"**Description:** {desc}")
-        if brand := product.get("productBrand"):
+        brand = product.get("productBrand")
+        material = product.get("primaryMaterial")
+        color = product.get("colorName")
+
+        if brand:
             st.markdown(f"**Brand:** {brand}")
-        if color := product.get("colorName"):
-            st.markdown(f"**Color:** {color}")
-        if material := product.get("primaryMaterial"):
+        if material:
             st.markdown(f"**Material:** {material}")
+        if color:
+            st.markdown(f"**Available Colors:** {color}")
 
-        pricing = []
+        description = product.get("description")
+        if description:
+            st.markdown(f"**Description:** {description}")
+
+        price_data = []
         for i in range(5):
-            qty = product.get(f"ProductPrice_{i}_quantityMin")
+            qty_min = product.get(f"ProductPrice_{i}_quantityMin")
             price = product.get(f"ProductPrice_{i}_price")
-            if pd.notnull(qty) and pd.notnull(price):
-                qty_str = f"{int(qty)}+" if i == 4 else f"{int(qty)}"
-                pricing.append((qty_str, f"${price:.2f}"))
+            if pd.notna(qty_min) and pd.notna(price):
+                label = f"{int(qty_min)}+" if i == 4 else str(int(qty_min))
+                price_data.append((label, f"${price:.2f}"))
 
-        if pricing:
-            st.markdown("#### **Pricing**")
-            table_md = "| Quantity | Price |\n|----------|-------|\n"
-            for qty, p in pricing:
-                table_md += f"| {qty} | {p} |\n"
-            st.markdown(table_md)
+        if price_data:
+            st.markdown("#### 📦 Price Tiers")
+            price_df = pd.DataFrame(price_data, columns=["Quantity", "Price"])
+            st.table(price_df)
+
+        if url := product.get("url_link"):
+            st.markdown(f"[🔗 View Product]({url})")
 
 def render_section(title, df_section):
     st.markdown(f"<h2 style='border-bottom: 2px solid #ccc; padding-bottom: 4px; margin-top: 40px'>{title}</h2>", unsafe_allow_html=True)
