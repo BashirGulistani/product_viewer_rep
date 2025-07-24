@@ -10,7 +10,7 @@ def load_data():
 df = load_data()
 
 # Get product IDs from app.py via session_state
-mport requests
+import requests
 
 url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json"
 response = requests.get(url)
