@@ -11,11 +11,15 @@ df = load_data()
 
 # Get product IDs from app.py via session_state
 def get_product_ids():
-    return st.session_state.get("recommended_ids", {
-        "Best": [],
-        "Better": [],
-        "Good": []
-    })
+    try:
+        with open("batches/recommendation_001.json", "r") as f:
+            return json.load(f)
+    except Exception:
+        return {
+            "Best": [],
+            "Better": [],
+            "Good": []
+        }
 
 recommended_ids = get_product_ids()
 
