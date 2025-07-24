@@ -139,7 +139,7 @@ def render_section(title, df_section):
 if not any(recommended_ids.values()):
     st.warning("No recommendations found. Please go back to the main app and generate recommendations.")
 else:
-    st.title("AI-Powered Product Recommendations")
+    st.title("Recommended Products")
     st.markdown("Here are the top product recommendations based on your request, curated into our Signature, Select, and Standard tiers.")
     st.divider()
     
