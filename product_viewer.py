@@ -39,8 +39,16 @@ def render_product_card(product):
                 product.get("image_url_5")
             ]
             images = [img for img in images if pd.notna(img) and isinstance(img, str) and img.startswith("http")]
+            images = [url for url in [
+                product.get("image_url_1"),
+                product.get("image_url_2"),
+                product.get("image_url_3"),
+                product.get("image_url_4"),
+                product.get("image_url_5"),
+            ] if url]  # filters out None or empty strings
+
             if images:
-                st.image(images, width=180, caption=product.get("productName", "Product"))
+                st.image(images, width=180)
             else:
                 st.markdown("No image available.")
 
