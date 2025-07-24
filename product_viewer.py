@@ -79,7 +79,7 @@ def render_product_card(product):
                 st.markdown("<h5>Features</h5>", unsafe_allow_html=True)
                 # Split description into sentences for bullet points
                 sentences = re.split(r'(?<=[.!?])\s+', desc)
-                for sentence in sentences:
+                for sentence in sentences[:3]:
                     if sentence: # Avoid creating empty bullet points
                         st.markdown(f"- {sentence}")
                 st.markdown("<br>", unsafe_allow_html=True) # Add vertical space
