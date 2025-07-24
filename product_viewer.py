@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
 import requests
+import re # Import the regular expression module
 
-# --- CHANGE: Set the page layout to wide. This MUST be the first st command. ---
+# --- Set the page layout to wide. This MUST be the first st command. ---
 st.set_page_config(layout="wide")
 
 # Load product details from CSV
@@ -26,11 +27,13 @@ category_names = {
 
 def render_image_slideshow(images, product_id):
     if not images:
+        st.image("https://via.placeholder.com/600x600.png?text=No+Image+Available", use_column_width=True)
         return
     image_tags = ""
     for img in images:
         if isinstance(img, str) and img.startswith("http"):
-            image_tags += f"<div class='swiper-slide'><img src='{img}' style='width:100%; height:auto; object-fit: contain;'/></div>"
+            # Added object-fit: contain to ensure the whole image is visible
+            image_tags += f"<div class='swiper-slide'><img src='{img}' style='width:100%; height:100%; object-fit: contain;'/></div>"
 
     st.components.v1.html(f"""
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
@@ -46,68 +49,100 @@ def render_image_slideshow(images, product_id):
     <script>
     new Swiper('#swiper-{product_id}', {{
         loop: true,
-        pagination: {{
-            el: '.swiper-pagination',
-            clickable: true,
-        }},
-        navigation: {{
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        }},
+        pagination: {{ el: '.swiper-pagination', clickable: true }},
+        navigation: {{ nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }},
     }});
     </script>
-    """, height=600) # You can adjust this height as needed
+    """, height=550)
 
 def render_product_card(product):
-    # --- CHANGE: Changed to 2 equal columns to split the screen 50/50 ---
-    cols = st.columns(2)
-    with cols[0]:
-        images = [product.get(f'image_url_{i}') for i in range(1, 6)]
-        images = [img for img in images if isinstance(img, str) and img.startswith("http")]
-        render_image_slideshow(images, product.get("productId", "unknown"))
+    # --- ENHANCEMENT: Wrap each product card in a container with a border ---
+    with st.container(border=True):
+        cols = st.columns(2)
+        with cols[0]:
+            images = [product.get(f'image_url_{i}') for i in range(1, 6)]
+            images = [img for img in images if isinstance(img, str) and img.startswith("http")]
+            render_image_slideshow(images, product.get("productId", "unknown"))
 
-    with cols[1]:
-        st.markdown(f"<h3 style='font-weight:700'>{product.get('productName', '')}</h3>", unsafe_allow_html=True)
+        with cols[1]:
+            st.markdown(f"<h3>{product.get('productName', 'Unnamed Product')}</h3>", unsafe_allow_html=True)
+            
+            # --- ENHANCEMENT: Use st.metric for a cleaner price display ---
+            price = product.get("product_price")
+            if pd.notnull(price):
+                st.metric(label="As low as", value=f"${price:,.2f}")
 
-        price = product.get("product_price")
-        if pd.notnull(price):
-            st.markdown(f"<p style='font-size:16px; color:#444;'>As low as <strong>${price:.2f}</strong></p>", unsafe_allow_html=True)
+            st.divider()
 
-        if desc := product.get("description"):
-            st.markdown(f"**Description:** {desc}")
-        if brand := product.get("productBrand"):
-            st.markdown(f"**Brand:** {brand}")
-        if color := product.get("colorName"):
-            st.markdown(f"**Color:** {color}")
-        if material := product.get("primaryMaterial"):
-            st.markdown(f"**Material:** {material}")
+            # --- CHANGE: Display "Description" as bulleted "Features" ---
+            if desc := product.get("description"):
+                st.markdown("<h5>Features</h5>", unsafe_allow_html=True)
+                # Split description into sentences for bullet points
+                sentences = re.split(r'(?<=[.!?])\s+', desc)
+                for sentence in sentences:
+                    if sentence: # Avoid creating empty bullet points
+                        st.markdown(f"- {sentence}")
+                st.markdown("<br>", unsafe_allow_html=True) # Add vertical space
 
-        pricing = []
-        for i in range(5):
-            qty = product.get(f"ProductPrice_{i}_quantityMin")
-            price = product.get(f"ProductPrice_{i}_price")
-            if pd.notnull(qty) and pd.notnull(price):
-                qty_str = f"{int(qty)}+" if i == 4 else f"{int(qty)}"
-                pricing.append((qty_str, f"${price:.2f}"))
+            # --- ENHANCEMENT: Group other details under "Specifications" ---
+            # The 'if field := ...' syntax already handles hiding missing fields
+            spec_html = ""
+            if brand := product.get("productBrand"):
+                spec_html += f"<div><strong>Brand:</strong> {brand}</div>"
+            if color := product.get("colorName"):
+                spec_html += f"<div><strong>Color:</strong> {color}</div>"
+            if material := product.get("primaryMaterial"):
+                spec_html += f"<div><strong>Material:</strong> {material}</div>"
 
-        if pricing:
-            st.markdown("#### **Pricing**")
-            table_md = "| Quantity | Price |\n|----------|-------|\n"
-            for qty, p in pricing:
-                table_md += f"| {qty} | {p} |\n"
-            st.markdown(table_md)
+            if spec_html:
+                 st.markdown("<h5>Specifications</h5>", unsafe_allow_html=True)
+                 st.html(spec_html)
+                 st.markdown("<br>", unsafe_allow_html=True)
+
+            # --- CHANGE: Transposed pricing table ---
+            pricing_data = []
+            for i in range(5):
+                qty = product.get(f"ProductPrice_{i}_quantityMin")
+                price_tier = product.get(f"ProductPrice_{i}_price")
+                if pd.notnull(qty) and pd.notnull(price_tier):
+                    qty_str = f"{int(qty)}+" if i == 4 else f"{int(qty)}"
+                    pricing_data.append((qty_str, f"${price_tier:,.2f}"))
+
+            if pricing_data:
+                # --- CHANGE: Add currency note and remove "Pricing" header ---
+                st.markdown("_Prices displayed in US Dollars (USD)_")
+                
+                quantities = [item[0] for item in pricing_data]
+                prices = [item[1] for item in pricing_data]
+                
+                qty_cells = "".join([f"<td>{q}</td>" for q in quantities])
+                price_cells = "".join([f"<td><strong>{p}</strong></td>" for p in prices])
+
+                html_table = f"""
+                <style>
+                    .pricing-table {{ width: 100%; border-collapse: collapse; margin-top: 5px; }}
+                    .pricing-table th, .pricing-table td {{ padding: 8px 12px; text-align: center; border: 1px solid #ddd; }}
+                    .pricing-table th {{ background-color: #f8f9fa; font-weight: bold; text-align: left; width: 100px; }}
+                </style>
+                <table class="pricing-table">
+                    <tr><th>Quantity</th>{qty_cells}</tr>
+                    <tr><th>Price</th>{price_cells}</tr>
+                </table>
+                """
+                st.html(html_table)
 
 def render_section(title, df_section):
-    st.markdown(f"<h2 style='border-bottom: 2px solid #ccc; padding-bottom: 4px; margin-top: 40px'>{title}</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='border-bottom: 3px solid #007bff; color: #007bff; padding-bottom: 10px; margin-top: 40px; margin-bottom: 20px;'>{title}</h2>", unsafe_allow_html=True)
     for _, row in df_section.iterrows():
         render_product_card(row)
-        st.markdown("---")
-
 
 if not any(recommended_ids.values()):
     st.warning("No recommendations found. Please go back to the main app and generate recommendations.")
 else:
     st.title("AI-Powered Product Recommendations")
+    st.markdown("Here are the top product recommendations based on your request, curated into our Signature, Select, and Standard tiers.")
+    st.divider()
+    
     for level in ["Best", "Better", "Good"]:
         label = category_names[level]
         ids = recommended_ids.get(level, [])
@@ -115,5 +150,4 @@ else:
 
         if not section_df.empty:
             section_df = section_df.copy()
-            section_df["category"] = level
             render_section(label, section_df)
