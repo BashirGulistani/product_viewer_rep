@@ -10,18 +10,11 @@ def load_data():
 df = load_data()
 
 # Get product IDs from app.py via session_state
-def get_product_ids():
-    try:
-        with open("product_viewer_rep/batches/recommendation_001.json", "r") as f:
-            return json.load(f)
-    except Exception:
-        return {
-            "Best": [],
-            "Better": [],
-            "Good": []
-        }
+mport requests
 
-recommended_ids = get_product_ids()
+url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json"
+response = requests.get(url)
+recommended_ids = response.json()
 st.write("Loaded recommendation IDs:", recommended_ids)
 
 
