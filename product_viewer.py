@@ -15,7 +15,6 @@ import requests
 url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json"
 response = requests.get(url)
 recommended_ids = response.json()
-st.write("Loaded recommendation IDs:", recommended_ids)
 
 
 category_names = {
