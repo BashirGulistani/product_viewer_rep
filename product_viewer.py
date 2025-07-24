@@ -41,7 +41,7 @@ def render_product_card(product):
     ]
     images = [img for img in images if isinstance(img, str) and img.startswith("http")]
     if images:
-        st.image(images, width=600, caption=product.get("productName", "Product"))
+        st.image(images, width=600)
 
     # Optional fields
     with st.expander("Product Details"):
