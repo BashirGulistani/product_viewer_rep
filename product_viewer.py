@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import requests
 
+# --- CHANGE: Set the page layout to wide. This MUST be the first st command. ---
+st.set_page_config(layout="wide")
+
 # Load product details from CSV
 @st.cache_data
 def load_data():
@@ -27,9 +30,8 @@ def render_image_slideshow(images, product_id):
     image_tags = ""
     for img in images:
         if isinstance(img, str) and img.startswith("http"):
-            image_tags += f"<div class='swiper-slide'><img src='{img}' style='width:100%; height:auto;'/></div>"
+            image_tags += f"<div class='swiper-slide'><img src='{img}' style='width:100%; height:auto; object-fit: contain;'/></div>"
 
-    # --- CHANGE: Increased height from 420 to 600 ---
     st.components.v1.html(f"""
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <div class="swiper-container" id="swiper-{product_id}" style="height: 100%;">
@@ -54,11 +56,11 @@ def render_image_slideshow(images, product_id):
         }},
     }});
     </script>
-    """, height=600)
+    """, height=600) # You can adjust this height as needed
 
 def render_product_card(product):
-    # --- CHANGE: Swapped column ratios from [1, 2] to [2, 1] to make the image column larger ---
-    cols = st.columns([2, 1])
+    # --- CHANGE: Changed to 2 equal columns to split the screen 50/50 ---
+    cols = st.columns(2)
     with cols[0]:
         images = [product.get(f'image_url_{i}') for i in range(1, 6)]
         images = [img for img in images if isinstance(img, str) and img.startswith("http")]
@@ -113,5 +115,5 @@ else:
 
         if not section_df.empty:
             section_df = section_df.copy()
-            section_df["category"] = level  # Add category column if needed
+            section_df["category"] = level
             render_section(label, section_df)
