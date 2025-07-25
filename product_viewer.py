@@ -111,21 +111,29 @@ def render_product_card(product):
 
             # --- CHANGE: Transposed pricing table ---
             pricing_data = []
-            # Try to use actual tier 4
-            qty = product.get("ProductPrice_4_quantityMin")
-            price_tier = product.get("ProductPrice_4_price")
-            if pd.notnull(qty) and pd.notnull(price_tier):
-                qty_str = f"{int(qty)}+"
-                pricing_data.append((qty_str, f"${price_tier:,.2f}"))
-            else:
-                # Fallback: try 3 → 0
-                for fallback in reversed(range(4)):
-                    qty = product.get(f"ProductPrice_{fallback}_quantityMin")
-                    price_tier = product.get(f"ProductPrice_{fallback}_price")
-                    if pd.notnull(qty) and pd.notnull(price_tier):
-                        qty_str = f"{int(qty)}+"
-                        pricing_data.append((qty_str, f"${price_tier:,.2f}"))
-                        break
+            
+            # Track which tiers are available
+            available_tiers = []
+            
+            # Collect all available tiers (0–4)
+            for i in range(5):
+                qty = product.get(f"ProductPrice_{i}_quantityMin")
+                price = product.get(f"ProductPrice_{i}_price")
+                if pd.notnull(qty) and pd.notnull(price):
+                    available_tiers.append((i, int(qty), float(price)))
+            
+            # Check if tier 4 exists
+            tier_4_exists = any(t[0] == 4 for t in available_tiers)
+            
+            # Build final pricing list
+            for idx, (i, qty, price) in enumerate(available_tiers):
+                # If this is the last available tier, and tier 4 is missing → add "+"
+                if not tier_4_exists and idx == len(available_tiers) - 1:
+                    qty_str = f"{qty}+"
+                else:
+                    qty_str = f"{qty}"
+            
+                pricing_data.append((qty_str, f"${price:,.2f}"))
 
 
             if pricing_data:
