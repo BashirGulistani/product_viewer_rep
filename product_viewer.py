@@ -62,6 +62,21 @@ def render_image_slideshow(images, product_id):
     </script>
     """, height=550)
 
+
+def clean_color_names(color_raw):
+    if not color_raw:
+        return ""
+
+    # Ensure it's a list
+    if isinstance(color_raw, str):
+        color_list = [c.strip() for c in color_raw.split(",")]
+    else:
+        color_list = color_raw
+
+    # Remove anything inside parentheses, e.g., "Blue (BK)" → "Blue"
+    clean_list = [re.sub(r"\s*\(.*?\)", "", color).strip() for color in color_list if color.strip()]
+    return ", ".join(clean_list)
+
 def render_product_card(product):
     # --- ENHANCEMENT: Wrap each product card in a container with a border ---
     with st.container(border=True):
@@ -112,7 +127,8 @@ def render_product_card(product):
                 spec_html += f"<div><strong>Brand:</strong> {brand}</div>"
             
             if color := product.get("colorName"):
-                spec_html += f"<div><strong>Color:</strong> {color}</div>"
+                cleaned_color = clean_color_names(color)
+                spec_html += f"<div><strong>Color:</strong> {cleaned_color}</div>"
             
             if material := product.get("primaryMaterial"):
                 spec_html += f"<div><strong>Material:</strong> {material}</div>"
