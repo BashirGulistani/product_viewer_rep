@@ -100,6 +100,9 @@ def render_product_card(product):
                 spec_html += f"<div><strong>Color:</strong> {color}</div>"
             if material := product.get("primaryMaterial"):
                 spec_html += f"<div><strong>Material:</strong> {material}</div>"
+            if link := product.get("url_link"):
+                spec_html += f'<div><a href="{link}" target="_blank">More Info</a></div>'
+         
 
             if spec_html:
                  st.markdown("<h5>Specifications</h5>", unsafe_allow_html=True)
@@ -108,12 +111,22 @@ def render_product_card(product):
 
             # --- CHANGE: Transposed pricing table ---
             pricing_data = []
-            for i in range(5):
-                qty = product.get(f"ProductPrice_{i}_quantityMin")
-                price_tier = product.get(f"ProductPrice_{i}_price")
-                if pd.notnull(qty) and pd.notnull(price_tier):
-                    qty_str = f"{int(qty)}+" if i == 4 else f"{int(qty)}"
-                    pricing_data.append((qty_str, f"${price_tier:,.2f}"))
+            # Try to use actual tier 4
+            qty = product.get("ProductPrice_4_quantityMin")
+            price_tier = product.get("ProductPrice_4_price")
+            if pd.notnull(qty) and pd.notnull(price_tier):
+                qty_str = f"{int(qty)}+"
+                pricing_data.append((qty_str, f"${price_tier:,.2f}"))
+            else:
+                # Fallback: try 3 → 0
+                for fallback in reversed(range(4)):
+                    qty = product.get(f"ProductPrice_{fallback}_quantityMin")
+                    price_tier = product.get(f"ProductPrice_{fallback}_price")
+                    if pd.notnull(qty) and pd.notnull(price_tier):
+                        qty_str = f"{int(qty)}+"
+                        pricing_data.append((qty_str, f"${price_tier:,.2f}"))
+                        break
+
 
             if pricing_data:
                 # --- CHANGE: Add currency note and remove "Pricing" header ---
