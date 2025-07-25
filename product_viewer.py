@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import re 
 import time
+import ast
 
 # --- Set the page layout to wide. This MUST be the first st command. ---
 st.set_page_config(layout="wide")
@@ -67,13 +68,18 @@ def clean_color_names(color_raw):
     if not color_raw:
         return ""
 
-    # Ensure it's a list
-    if isinstance(color_raw, str):
+    # Handle stringified list: "['Navy', 'Black']"
+    if isinstance(color_raw, str) and color_raw.strip().startswith("["):
+        try:
+            color_list = ast.literal_eval(color_raw)
+        except Exception:
+            color_list = [color_raw]  # fallback: treat entire string as one color
+    elif isinstance(color_raw, str):
         color_list = [c.strip() for c in color_raw.split(",")]
     else:
-        color_list = color_raw
+        color_list = color_raw  # assume it's already a list
 
-    # Remove anything inside parentheses, e.g., "Blue (BK)" → "Blue"
+    # Clean parentheses from each color name
     clean_list = [re.sub(r"\s*\(.*?\)", "", color).strip() for color in color_list if color.strip()]
     return ", ".join(clean_list)
 
