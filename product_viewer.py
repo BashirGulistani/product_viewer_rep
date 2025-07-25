@@ -94,20 +94,28 @@ def render_product_card(product):
             # --- ENHANCEMENT: Group other details under "Specifications" ---
             # The 'if field := ...' syntax already handles hiding missing fields
             spec_html = ""
+            
+            # Start an outer div for indentation and spacing
+            spec_html += '<div style="margin-left: 20px; line-height: 1.8em;">'
+            
             if brand := product.get("productBrand"):
                 spec_html += f"<div><strong>Brand:</strong> {brand}</div>"
+            
             if color := product.get("colorName"):
                 spec_html += f"<div><strong>Color:</strong> {color}</div>"
+            
             if material := product.get("primaryMaterial"):
                 spec_html += f"<div><strong>Material:</strong> {material}</div>"
+            
             if link := product.get("url_link"):
                 spec_html += f'<div><a href="{link}" target="_blank">More Info</a></div>'
-         
-
+            
+            spec_html += "</div>"  # Close outer div
+            
             if spec_html:
-                 st.markdown("<h5>Specifications</h5>", unsafe_allow_html=True)
-                 st.html(spec_html)
-                 st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<h5>Specifications</h5>", unsafe_allow_html=True)
+                st.markdown(spec_html, unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
 
             # --- CHANGE: Transposed pricing table ---
             pricing_data = []
@@ -153,7 +161,7 @@ def render_product_card(product):
                 </style>
                 <table class="pricing-table">
                     <tr><th>Quantity</th>{qty_cells}</tr>
-                    <tr><th>Price</th>{price_cells}</tr>
+                    <tr><th>Approximate Price</th>{price_cells}</tr>
                 </table>
                 """
                 st.html(html_table)
