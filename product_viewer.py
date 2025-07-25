@@ -112,27 +112,26 @@ def render_product_card(product):
             # --- CHANGE: Transposed pricing table ---
             pricing_data = []
             
-            # Track which tiers are available
+            # Track available tiers: list of (index, quantityMin, price)
             available_tiers = []
             
-            # Collect all available tiers (0–4)
+            # Step 1: Collect available tiers (0–4)
             for i in range(5):
                 qty = product.get(f"ProductPrice_{i}_quantityMin")
                 price = product.get(f"ProductPrice_{i}_price")
                 if pd.notnull(qty) and pd.notnull(price):
                     available_tiers.append((i, int(qty), float(price)))
             
-            # Check if tier 4 exists
-            tier_4_exists = any(t[0] == 4 for t in available_tiers)
+            # Step 2: Identify if tier 4 is present
+            tier_4_present = any(t[0] == 4 for t in available_tiers)
             
-            # Build final pricing list
-            for idx, (i, qty, price) in enumerate(available_tiers):
-                # If this is the last available tier, and tier 4 is missing → add "+"
-                if not tier_4_exists and idx == len(available_tiers) - 1:
+            # Step 3: Build pricing data
+            for idx, (tier_index, qty, price) in enumerate(available_tiers):
+                is_last = idx == len(available_tiers) - 1
+                if (tier_index == 4) or (not tier_4_present and is_last):
                     qty_str = f"{qty}+"
                 else:
                     qty_str = f"{qty}"
-            
                 pricing_data.append((qty_str, f"${price:,.2f}"))
 
 
