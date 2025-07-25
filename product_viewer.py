@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import requests
-import re # Import the regular expression module
+import re 
+import time
 
 # --- Set the page layout to wide. This MUST be the first st command. ---
 st.set_page_config(layout="wide")
@@ -13,8 +14,9 @@ def load_data():
 
 df = load_data()
 
-# Get product IDs from the source JSON
-url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json"
+
+url = f"https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json?t={int(time.time())}"
+
 headers = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache"
