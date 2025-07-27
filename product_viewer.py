@@ -39,7 +39,7 @@ def load_fresh_json_from_github():
 
 # Optional: trigger reload only when ?reload=true
 query_params = st.query_params
-if query_params.get("reload") == "true" or "recommended_ids" not in st.session_state:
+if query_params.get("reload") == "true":
     st.session_state["recommended_ids"] = load_fresh_json_from_github()
 
 # Use it
