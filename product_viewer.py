@@ -21,7 +21,7 @@ df = load_data()
 logo_url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/idYu324uEk_logos.png"
 
 html_header = f'''
-<div style="background-color:#007bff;padding:1.2em;text-align:center;border-radius:8px 8px 8px 8px;margin-bottom:1.5em;">
+<div style="background-color:#0E3B53;padding:1.2em;text-align:center;border-radius:8px 8px 8px 8px;margin-bottom:1.5em;">
     <img src="{logo_url}" alt="Logo" style="height:60px;" />
 </div>
 '''
@@ -230,7 +230,7 @@ def render_product_card(product):
                 st.html(html_table)
 
 def render_section(title, df_section):
-    st.markdown(f"<h2 style='border-bottom: 3px solid #007bff; color: #007bff; padding-bottom: 10px; margin-top: 40px; margin-bottom: 20px;'>{title}</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='border-bottom: 3px solid #0E3B53; color: #0E3B53; padding-bottom: 10px; margin-top: 40px; margin-bottom: 20px;'>{title}</h2>", unsafe_allow_html=True)
     for _, row in df_section.iterrows():
         render_product_card(row)
 
