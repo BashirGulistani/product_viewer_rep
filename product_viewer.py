@@ -218,3 +218,7 @@ else:
         if not section_df.empty:
             section_df = section_df.copy()
             render_section(label, section_df)
+    
+    import gc  
+    del recommended_ids
+    gc.collect()
