@@ -23,7 +23,7 @@ logo_url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep
 html_header = f'''
 <div style="
     position: fixed;
-    top: 3;
+    top: 0.2;
     left: 0;
     width: 100%;
     background-color: #0E3B53;
