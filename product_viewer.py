@@ -4,6 +4,7 @@ import requests
 import re 
 import time
 import ast
+import json
 
 # --- Set the page layout to wide. This MUST be the first st command. ---
 st.set_page_config(layout="wide")
@@ -16,14 +17,33 @@ def load_data():
 df = load_data()
 
 
-url = f"https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json?t={int(time.time())}"
-headers = {
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache"
-}
 
-response = requests.get(url, headers=headers)
-recommended_ids = response.json()
+def load_fresh_json_from_github():
+    # Add a unique timestamp query param to try busting CDN cache
+    timestamp = int(time.time())
+    url = f"https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json?ts={timestamp}"
+
+    headers = {
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+        "User-Agent": f"Streamlit-{timestamp}"  # Helps break some CDN rules
+    }
+
+    response = requests.get(url, headers=headers)
+    
+    try:
+        return response.json()
+    except Exception as e:
+        st.error(f"Failed to load JSON: {e}")
+        return {}
+
+# Optional: trigger reload only when ?reload=true
+query_params = st.query_params
+if query_params.get("reload") == "true" or "recommended_ids" not in st.session_state:
+    st.session_state["recommended_ids"] = load_fresh_json_from_github()
+
+# Use it
+recommended_ids = st.session_state["recommended_ids"]
 
 
 category_names = {
