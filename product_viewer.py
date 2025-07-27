@@ -18,7 +18,7 @@ def load_data():
 df = load_data()
 
 # Logo URL from GitHub
-logo_url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/assets/idYu324uEk_logos.png"
+logo_url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/idYu324uEk_logos.png"
 
 html_header = f'''
 <div style="background-color:#007BFF;padding:1.2em;text-align:center;border-radius:0 0 8px 8px;margin-bottom:1.5em;">
