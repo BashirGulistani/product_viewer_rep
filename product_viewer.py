@@ -241,7 +241,10 @@ else:
     '<h1 style="color:#0E3B53;">Recommended Products</h1>',
     unsafe_allow_html=True
 )
-    st.markdown("Here are the top product recommendations based on your request, curated into our Signature, Select, and Standard tiers.")
+    st.markdown(
+    '<p style="font-size:18px;">Here are the top product recommendations based on your request, curated into our Signature, Select, and Standard tiers.</p>',
+    unsafe_allow_html=True
+)
     st.divider()
     
     for level in ["Best", "Better", "Good"]:
