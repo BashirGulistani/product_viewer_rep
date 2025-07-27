@@ -102,24 +102,26 @@ def render_product_card(product):
             st.divider()
 
             # --- CHANGE: Display "Description" as bulleted "Features" ---
-            if desc := product.get("description"):
-                st.markdown("<h5>Features</h5>", unsafe_allow_html=True)
-            
-                # Split description into sentences for bullet points
-                sentences = re.split(r'(?<=[.!?])\s+', desc)
-            
-                # Start an indented list container
-                features_html = '<div style="margin-left: 20px;"><ul style="margin-bottom: 0;">'
-            
-                for sentence in sentences[:3]:
-                    if sentence.strip():  # Avoid empty bullet points
-                        features_html += f"<li>{sentence.strip()}</li>"
-            
-                features_html += "</ul></div>"
-            
-                st.markdown(features_html, unsafe_allow_html=True)
-                st.markdown("<br>", unsafe_allow_html=True)  # Add vertical space
-
+            try:
+                if desc := product.get("description"):
+                    st.markdown("<h5>Features</h5>", unsafe_allow_html=True)
+                
+                    # Split description into sentences for bullet points
+                    sentences = re.split(r'(?<=[.!?])\s+', desc)
+                
+                    # Start an indented list container
+                    features_html = '<div style="margin-left: 20px;"><ul style="margin-bottom: 0;">'
+                
+                    for sentence in sentences[:3]:
+                        if sentence.strip():  # Avoid empty bullet points
+                            features_html += f"<li>{sentence.strip()}</li>"
+                
+                    features_html += "</ul></div>"
+                
+                    st.markdown(features_html, unsafe_allow_html=True)
+                    st.markdown("<br>", unsafe_allow_html=True)  # Add vertical space
+            except Exception:
+                pass
 
             # --- ENHANCEMENT: Group other details under "Specifications" ---
             # The 'if field := ...' syntax already handles hiding missing fields
