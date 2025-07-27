@@ -5,6 +5,7 @@ import re
 import time
 import ast
 import json
+import base64
 
 # --- Set the page layout to wide. This MUST be the first st command. ---
 st.set_page_config(layout="wide")
@@ -18,32 +19,31 @@ df = load_data()
 
 
 
-def load_fresh_json_from_github():
-    # Add a unique timestamp query param to try busting CDN cache
-    timestamp = int(time.time())
-    url = f"https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json?ts={timestamp}"
+def fetch_json_from_github_api():
+    api_url = "https://api.github.com/repos/BashirGulistani/product_viewer_rep/contents/batches/recommendation_001.json"
 
     headers = {
+        "Accept": "application/vnd.github.v3.raw",
         "Cache-Control": "no-cache",
-        "Pragma": "no-cache",
-        "User-Agent": f"Streamlit-{timestamp}"  # Helps break some CDN rules
+        "Pragma": "no-cache"
     }
 
-    response = requests.get(url, headers=headers)
-    
-    try:
-        return response.json()
-    except Exception as e:
-        st.error(f"Failed to load JSON: {e}")
+    if "github" in st.secrets and "token" in st.secrets["github"]:
+        token = st.secrets["github"]["token"]
+        headers["Authorization"] = f"Bearer {token}"
+
+    response = requests.get(api_url, headers=headers)
+
+    if response.status_code == 200:
+        content = response.json()
+        decoded_content = base64.b64decode(content["content"]).decode("utf-8")
+        return json.loads(decoded_content)
+    else:
+        st.error(f"Failed to fetch file from GitHub API: {response.status_code}")
         return {}
 
-# Optional: trigger reload only when ?reload=true
-query_params = st.query_params
-if query_params.get("reload") == "true":
-    st.session_state["recommended_ids"] = load_fresh_json_from_github()
-
-# Use it
-recommended_ids = st.session_state["recommended_ids"]
+# Fetch fresh JSON from GitHub
+recommended_ids = fetch_json_from_github_api()
 
 
 category_names = {
