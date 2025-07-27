@@ -21,12 +21,22 @@ df = load_data()
 logo_url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/idYu324uEk_logos.png"
 
 html_header = f'''
-<div style="background-color:#0E3B53;padding:1.2em;text-align:center;border-radius:8px 8px 8px 8px;margin-bottom:1.5em;">
-    <img src="{logo_url}" alt="Logo" style="height:60px;" />
+<div style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #0E3B53;
+    padding: 0.8em;
+    text-align: center;
+    z-index: 1000;
+">
+    <img src="{logo_url}" alt="Logo" style="height: 60px;" />
 </div>
+<br><br><br><br>  <!-- Push content below the fixed header -->
 '''
-
 st.markdown(html_header, unsafe_allow_html=True)
+
 
 
 def fetch_json_from_github_api():
