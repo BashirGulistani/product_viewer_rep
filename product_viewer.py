@@ -27,15 +27,18 @@ html_header = f'''
     left: 0;
     width: 100%;
     background-color: #0E3B53;
-    padding: 0.8em;
+    padding: 1.2em 0 1em 0;
     text-align: center;
     z-index: 1000;
 ">
     <img src="{logo_url}" alt="Logo" style="height: 60px;" />
 </div>
-<br><br><br><br>  <!-- Push content below the fixed header -->
+
+<!-- Push page content down to avoid being hidden -->
+<div style="height: 100px;"></div>
 '''
 st.markdown(html_header, unsafe_allow_html=True)
+
 
 
 
