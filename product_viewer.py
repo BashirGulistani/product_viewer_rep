@@ -5,13 +5,6 @@ import re
 import time
 import ast
 
-if "initial_load_done" not in st.session_state:
-    # ✅ First time this session → clear cache and rerun
-    st.session_state.initial_load_done = True
-    st.cache_data.clear()
-    st.cache_resource.clear()
-    st.experimental_rerun()
-
 # --- Set the page layout to wide. This MUST be the first st command. ---
 st.set_page_config(layout="wide")
 
