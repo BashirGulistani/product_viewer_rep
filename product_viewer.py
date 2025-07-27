@@ -27,7 +27,7 @@ html_header = f'''
     left: 0;
     width: 100%;
     background-color: #0E3B53;
-    padding: 1.2em 0 1em 0;
+    padding: 3.2em 0 1em 0;
     text-align: center;
     z-index: 1000;
 ">
