@@ -17,7 +17,6 @@ df = load_data()
 
 
 url = f"https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/batches/recommendation_001.json?t={int(time.time())}"
-
 headers = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache"
