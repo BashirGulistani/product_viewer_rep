@@ -28,6 +28,7 @@ def fetch_json_from_github_api():
         "Pragma": "no-cache"
     }
 
+    # Optional: include auth token from secrets
     if "github" in st.secrets and "token" in st.secrets["github"]:
         token = st.secrets["github"]["token"]
         headers["Authorization"] = f"Bearer {token}"
@@ -35,11 +36,21 @@ def fetch_json_from_github_api():
     response = requests.get(api_url, headers=headers)
 
     if response.status_code == 200:
-        content = response.json()
-        decoded_content = base64.b64decode(content["content"]).decode("utf-8")
-        return json.loads(decoded_content)
+        try:
+            content = response.json()
+            if "content" in content:
+                decoded_content = base64.b64decode(content["content"]).decode("utf-8")
+                return json.loads(decoded_content)
+            else:
+                st.error("GitHub API response does not contain 'content' field.")
+                st.json(content)  # 👈 Show response structure for debugging
+                return {}
+        except Exception as e:
+            st.error(f"Failed to parse GitHub content: {e}")
+            return {}
     else:
-        st.error(f"Failed to fetch file from GitHub API: {response.status_code}")
+        st.error(f"GitHub API error: {response.status_code}")
+        st.text(response.text)
         return {}
 
 # Fetch fresh JSON from GitHub
