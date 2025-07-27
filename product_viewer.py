@@ -237,7 +237,10 @@ def render_section(title, df_section):
 if not any(recommended_ids.values()):
     st.warning("No recommendations found. Please go back to the main app and generate recommendations.")
 else:
-    st.title("Recommended Products")
+    st.markdown(
+    '<h1 style="color:#0E3B53;">Recommended Products</h1>',
+    unsafe_allow_html=True
+)
     st.markdown("Here are the top product recommendations based on your request, curated into our Signature, Select, and Standard tiers.")
     st.divider()
     
