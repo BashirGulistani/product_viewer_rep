@@ -86,7 +86,7 @@ def render_image_slideshow(images, product_id):
 
 # --- Dialog Function (using the decorator pattern) ---
 
-@st.dialog("Product Details")
+@st.dialog("Product Details", width="large")
 def show_product_dialog(product):
     """Renders the full product details inside the dialog."""
     st.subheader(product.get("productName", "Unnamed Product"))
