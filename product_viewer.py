@@ -187,11 +187,11 @@ div[data-testid="stDialog"] div[role="dialog"]:has(.big-dialog) {
 @st.dialog("Product Details")
 def show_product_dialog(product):
     """Renders the full product details inside the dialog."""
-    #st.subheader(product.get("productName", "Unnamed Product"))
+    
     cleaned_title = clean_product_name(product.get("productName", "Unnamed Product"))
     st.subheader(cleaned_title)
+
     images = [product.get(f'image_url_{i}') for i in range(1, 6)]
-    images = [img for img in images if isinstance(img, str) and img.startswith("http")]
     render_image_slideshow(images, product.get("productId"))
 
     st.divider()
@@ -214,13 +214,58 @@ def show_product_dialog(product):
             st.link_button("View on Supplier Website", link)
 
     st.divider()
-    pricing_data = []
+
+    # --- CHANGED: Transposed pricing table ---
+    quantities = []
+    prices = []
     for i in range(5):
-        if pd.notnull(product.get(f"ProductPrice_{i}_quantityMin")) and pd.notnull(product.get(f"ProductPrice_{i}_price")):
-            pricing_data.append({"Quantity": int(product[f"ProductPrice_{i}_quantityMin"]), "Price per item (USD)": f"${product[f'ProductPrice_{i}_price']:.2f}"})
-    if pricing_data:
+        qty = product.get(f"ProductPrice_{i}_quantityMin")
+        price_val = product.get(f"ProductPrice_{i}_price")
+        if pd.notnull(qty) and pd.notnull(price_val):
+            quantities.append(f"{int(qty)}")
+            prices.append(f"${price_val:,.2f}")
+
+    if quantities:
         st.markdown("##### Tiered Pricing")
-        st.dataframe(pd.DataFrame(pricing_data), use_container_width=True, hide_index=True)
+        
+        # Generate the HTML table cells for each row
+        qty_cells = "".join([f"<td>{q}</td>" for q in quantities])
+        price_cells = "".join([f"<td><strong>{p}</strong></td>" for p in prices])
+
+        # Construct the full HTML table with inline CSS
+        html_table = f"""
+        <style>
+            .pricing-table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }}
+            .pricing-table th, .pricing-table td {{
+                border: 1px solid #d3d3d3;
+                padding: 10px;
+                text-align: center;
+            }}
+            .pricing-table th {{
+                text-align: left;
+                background-color: #f0f2f6;
+                width: 35%;
+            }}
+        </style>
+        <table class="pricing-table">
+            <tbody>
+                <tr>
+                    <th>Quantity</th>
+                    {qty_cells}
+                </tr>
+                <tr>
+                    <th>Price per item (USD)</th>
+                    {price_cells}
+                </tr>
+            </tbody>
+        </table>
+        """
+        # Use st.html to render the custom table
+        st.html(html_table)
     st.html("<span class='big-dialog'></span>")
 
 # --- Main App ---
