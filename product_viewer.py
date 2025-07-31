@@ -197,7 +197,7 @@ def show_product_dialog(product):
     st.divider()
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("##### Features")
+        st.markdown("### Features")
         if desc := product.get("description"):
             for sentence in re.split(r'(?<=[.!?])\s+', desc):
                 if sentence.strip():
@@ -205,7 +205,7 @@ def show_product_dialog(product):
         else:
             st.markdown("- No features listed.")
     with col2:
-        st.markdown("##### Specifications")
+        st.markdown("### Specifications")
         if brand := product.get("productBrand"):
             st.markdown(f"**Brand:** {brand}")
         if material := product.get("primaryMaterial"):
@@ -226,7 +226,7 @@ def show_product_dialog(product):
             prices.append(f"${price_val:,.2f}")
 
     if quantities:
-        st.markdown("##### Tiered Pricing")
+        st.markdown("### Tiered Pricing")
         
         # Generate the HTML table cells for each row
         qty_cells = "".join([f"<td>{q}</td>" for q in quantities])
