@@ -210,17 +210,6 @@ def show_product_dialog(product):
     images = [product.get(f'image_url_{i}') for i in range(1, 6)]
     render_image_slideshow(images, product.get("productId"))
     
-    if valid_images:
-        # Use tabs to create a simple, clickable image gallery/slideshow
-        tab_titles = [f"Image {i+1}" for i in range(len(valid_images))]
-        tabs = st.tabs(tab_titles)
-        for i, tab in enumerate(tabs):
-            with tab:
-                st.image(valid_images[i], use_column_width='auto')
-    else:
-        st.image("https://via.placeholder.com/600x400.png?text=Image+Not+Available")
-
-
     st.divider()
     col1, col2 = st.columns(2)
     with col1:
