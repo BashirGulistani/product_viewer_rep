@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import re
 import ast
+from urllib.parse import quote
 
 # --- Page Configuration (MUST be the first st command) ---
 st.set_page_config(layout="wide", page_title="Product Recommendations")
@@ -57,7 +58,27 @@ def render_color_swatches(hex_list_str):
         pass
     st.markdown(f'<div style="height: 30px; text-align: center;">{swatches_html}</div>', unsafe_allow_html=True)
 
-###
+######
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+# --- Functions for managing favorites ---
+
+def add_to_favorites(product_id):
+    """Adds a product ID to the favorites list in session state."""
+    if product_id not in st.session_state.favorites:
+        st.session_state.favorites.append(product_id)
+
+def remove_from_favorites(product_id):
+    """Removes a product ID from the favorites list."""
+    if product_id in st.session_state.favorites:
+        st.session_state.favorites.remove(product_id)
+
+
+######
+
 
 def clean_product_name(name_str):
     """
@@ -282,8 +303,57 @@ product_ids = fetch_product_ids_from_github()
 
 ###
 
+# --- Initialize Session State for Favorites ---
+if 'favorites' not in st.session_state:
+    st.session_state.favorites = []
 
+# --- Sidebar for Viewing Favorites ---
+with st.sidebar:
+    st.header(f"View Favorites ({len(st.session_state.favorites)})")
 
+    if not st.session_state.favorites:
+        st.write("You haven't added any favorites yet. Click the ❤️ on a product to add it.")
+    else:
+        # Get details for favorited products
+        favorited_products_df = df[df['productId'].astype(str).isin(st.session_state.favorites)]
+
+        for _, product in favorited_products_df.iterrows():
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.write(product['productName'])
+            with col2:
+                st.button("➖", key=f"remove_{product['productId']}", on_click=remove_from_favorites, args=[str(product['productId'])])
+
+        st.divider()
+        st.subheader("Prepare Email")
+        st.write("Enter your details below to generate a pre-filled email in your own email client.")
+        
+        user_email = st.text_input("Your Email Address")
+        company_name = st.text_input("Your Company Name")
+
+        if st.button("Prepare Email"):
+            if user_email and company_name and "@" in user_email:
+                # Construct the email body
+                body_lines = [
+                    f"Hello,\n\nHere is my list of favorited products from {company_name}:\n"
+                ]
+                for _, product in favorited_products_df.iterrows():
+                    name = product.get('productName', 'N/A')
+                    pid = product.get('productId', 'N/A')
+                    link = product.get('url_link', 'Not Available')
+                    body_lines.append(f"• {name} (Item #{pid})")
+                    body_lines.append(f"  Link: {link}\n")
+                
+                body = "\n".join(body_lines)
+
+                # Create the mailto link
+                subject = f"Product Inquiry from {company_name}"
+                mailto_link = f"mailto:{user_email}?subject={quote(subject)}&body={quote(body)}"
+                
+                # Display the clickable link
+                st.markdown(f'<a href="{mailto_link}" target="_blank" style="display:inline-block;padding:0.5em 1em;background-color:#007bff;color:white;border-radius:5px;text-decoration:none;">Click Here to Open Email</a>', unsafe_allow_html=True)
+            else:
+                st.warning("Please fill in a valid email and your company name.")
 
 if not product_ids:
     st.warning("Could not find any recommended products. Please generate a new list from the main app.")
@@ -301,21 +371,27 @@ else:
         for i, (index, product) in enumerate(products_with_images_df.iterrows()):
             with cols[i % 5]:
                 with st.container(border=True):
-                    st.image(product['thumbnail_url'])
-                    #st.markdown(f"<p style='text-align:center; font-weight:bold;'>{product.get('productName', 'No Name')}</p>", unsafe_allow_html=True)
-                    cleaned_name = clean_product_name(product.get('productName', 'No Name'))
-                    st.markdown(f"<p style='text-align:center; font-weight:bold;'>{cleaned_name}</p>", unsafe_allow_html=True)
                     
-                    render_color_swatches(product.get('hexColor'))
-                    st.markdown(f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{product.get('productId')}</p>", unsafe_allow_html=True)
+                    # --- Favorite Button (Heart Icon) ---
+                    product_id_str = str(product.get('productId'))
+                    is_favorited = product_id_str in st.session_state.favorites
+                    
+                    if is_favorited:
+                        st.button("❤️ Remove", key=f"fav_{product_id_str}", on_click=remove_from_favorites, args=[product_id_str])
+                    else:
+                        st.button("🤍 Favorite", key=f"fav_{product_id_str}", on_click=add_to_favorites, args=[product_id_str])
 
-                    # --- CHANGE: Updated price styling ---
+                    # Card content
+                    st.image(product['thumbnail_url'])
+                    st.markdown(f"<p style='text-align:center; font-weight:bold;'>{product.get('productName', 'No Name')}</p>", unsafe_allow_html=True)
+                    render_color_swatches(product.get('hexColor'))
+                    st.markdown(f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{product_id_str}</p>", unsafe_allow_html=True)
+                    
                     price = product.get("product_price")
                     price_text = f"As low as <strong style='font-size: 1.15em;'>${price:,.2f}</strong>" if pd.notnull(price) else ""
                     st.markdown(f"<p style='text-align:center;'>{price_text}</p>", unsafe_allow_html=True)
-                    # --- END CHANGE ---
 
-                    if st.button("View Details", key=f"view_{product.get('productId')}", use_container_width=True):
+                    if st.button("View Details", key=f"view_{product_id_str}", use_container_width=True):
                         show_product_dialog(product)
                 
                 st.write("")
