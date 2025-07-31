@@ -56,19 +56,35 @@ def render_color_swatches(hex_list_str):
 
 
 def render_image_slideshow(images, product_id):
-    """Renders a Swiper.js image slideshow."""
-    if not images:
-        st.image("https://via.placeholder.com/600x600.png?text=No+Image", use_column_width=True)
+    """Renders a Swiper.js image slideshow with responsive images."""
+    
+    # Filter for valid image URLs, effectively ignoring NA/null values
+    valid_images = [
+        img for img in images 
+        if isinstance(img, str) and img.startswith("http")
+    ]
+
+    if not valid_images:
+        st.image("https://via.placeholder.com/600x400.png?text=Image+Not+Available", use_column_width=True)
         return
 
+    # Create image tags with improved CSS for responsive sizing
     image_tags = "".join(
-        f"<div class='swiper-slide'><img src='{img}' style='width:100%; height:auto; object-fit: contain;'/></div>"
-        for img in images if isinstance(img, str) and img.startswith("http")
+        f"""
+        <div class='swiper-slide' style='display: flex; align-items: center; justify-content: center;'>
+            <img src='{img}' 
+                 style='max-width: 100%; max-height: 380px; display: block; object-fit: contain;'/>
+        </div>
+        """
+        for img in valid_images
     )
+
+    # Set container height to accommodate the max image height and controls
+    container_height = 410
 
     st.components.v1.html(f"""
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
-    <div class="swiper-container" id="swiper-{product_id}" style="height: 400px;">
+    <div class="swiper-container" id="swiper-{product_id}" style="height: {container_height}px;">
         <div class="swiper-wrapper">{image_tags}</div>
         <div class="swiper-pagination"></div>
         <div class="swiper-button-prev" style="color:#0E3B53;"></div>
@@ -77,12 +93,12 @@ def render_image_slideshow(images, product_id):
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script>
     new Swiper('#swiper-{product_id}', {{
-        loop: true,
+        loop: {str(len(valid_images) > 1).lower()}, // Disable loop if only one image
         pagination: {{ el: '.swiper-pagination', clickable: true }},
         navigation: {{ nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }},
     }});
     </script>
-    """, height=410)
+    """, height=container_height)
 
 # --- Dialog Function (using the decorator pattern) ---
 
