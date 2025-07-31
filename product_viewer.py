@@ -59,6 +59,25 @@ def render_color_swatches(hex_list_str):
 
 ###
 
+def clean_product_name(name_str):
+    """
+    Cleans product names by removing characters that are not standard letters,
+    numbers, or common punctuation.
+    """
+    if not isinstance(name_str, str):
+        return "Unnamed Product"
+    
+    # This regular expression finds any character that is NOT a letter (a-z, A-Z),
+    # a number (0-9), a space, or one of the common symbols in the set: - & / ' , .
+    # It replaces them with an empty string.
+    allowed_chars_pattern = r"[^a-zA-Z0-9\s\-&/',.]"
+    cleaned_name = re.sub(allowed_chars_pattern, '', name_str)
+    
+    # Replace multiple spaces with a single space for cleanliness
+    cleaned_name = re.sub(r'\s+', ' ', cleaned_name)
+    
+    return cleaned_name.strip()
+
 def find_first_available_image(product):
     """Iterates through image_url_1 to 5 and returns the first valid URL."""
     for i in range(1, 6):
@@ -168,7 +187,9 @@ div[data-testid="stDialog"] div[role="dialog"]:has(.big-dialog) {
 @st.dialog("Product Details")
 def show_product_dialog(product):
     """Renders the full product details inside the dialog."""
-    st.subheader(product.get("productName", "Unnamed Product"))
+    #st.subheader(product.get("productName", "Unnamed Product"))
+    cleaned_title = clean_product_name(product.get("productName", "Unnamed Product"))
+    st.subheader(cleaned_title)
     images = [product.get(f'image_url_{i}') for i in range(1, 6)]
     images = [img for img in images if isinstance(img, str) and img.startswith("http")]
     render_image_slideshow(images, product.get("productId"))
@@ -236,7 +257,11 @@ else:
             with cols[i % 5]:
                 with st.container(border=True):
                     st.image(product['thumbnail_url'])
-                    st.markdown(f"<p style='text-align:center; font-weight:bold;'>{product.get('productName', 'No Name')}</p>", unsafe_allow_html=True)
+                    #st.markdown(f"<p style='text-align:center; font-weight:bold;'>{product.get('productName', 'No Name')}</p>", unsafe_allow_html=True)
+                    cleaned_name = clean_product_name(product.get('productName', 'No Name'))
+                    st.markdown(f"<p style='text-align:center; font-weight:bold;'>{cleaned_name}</p>", unsafe_allow_html=True)
+                    
+                    render_color_swatches(product.get('hexColor'))
                     render_color_swatches(product.get('hexColor'))
                     st.markdown(f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{product.get('productId')}</p>", unsafe_allow_html=True)
 
