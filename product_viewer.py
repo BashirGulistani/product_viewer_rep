@@ -173,6 +173,9 @@ st.divider()
 df = load_data()
 product_ids = fetch_product_ids_from_github()
 
+
+
+
 if not product_ids:
     st.warning("Could not find any recommended products. Please generate a new list from the main app.")
 else:
@@ -182,13 +185,14 @@ else:
     if products_df.empty:
         st.error("Product details for the recommended IDs could not be found in the data file.")
     else:
-        # Changed to 5 columns for a more compact grid
+        # Create 5 columns for the grid
         cols = st.columns(5)
-        for index, product in products_df.iterrows():
-            # Cycle through the 5 columns
-            with cols[index % 5]:
+        
+        # CORRECTED: Use enumerate to get a sequential index 'i' for layout
+        for i, (index, product) in enumerate(products_df.iterrows()):
+            # Use the sequential index 'i' to cycle through the 5 columns
+            with cols[i % 5]:
                 with st.container(border=True):
-                    # Find the first valid image to use as the thumbnail
                     thumbnail_url = find_first_available_image(product)
                     if thumbnail_url:
                         st.image(thumbnail_url)
