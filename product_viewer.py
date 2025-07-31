@@ -262,7 +262,6 @@ else:
                     st.markdown(f"<p style='text-align:center; font-weight:bold;'>{cleaned_name}</p>", unsafe_allow_html=True)
                     
                     render_color_swatches(product.get('hexColor'))
-                    render_color_swatches(product.get('hexColor'))
                     st.markdown(f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{product.get('productId')}</p>", unsafe_allow_html=True)
 
                     # --- CHANGE: Updated price styling ---
