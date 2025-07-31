@@ -137,10 +137,8 @@ def get_color_name(hex_code):
 st.markdown(
     """
 <style>
-/* Make dialog wider for product details */
 div[data-testid="stDialog"] div[role="dialog"]:has(.big-dialog) {
     width: 80vw;
-    max-width: 900px;
 }
 </style>
 """,
