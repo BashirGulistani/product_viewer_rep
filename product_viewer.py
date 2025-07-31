@@ -152,10 +152,16 @@ def show_product_dialog(product):
     st.subheader(cleaned_title)
 
     # Image Slideshow Logic (assuming a helper function not shown for brevity)
-    images = [product.get(f'image_url_{i}') for i in range(1, 6)]
+    # Image Slideshow Logic
     valid_images = [img for img in images if isinstance(img, str) and img.startswith("http")]
+
     if valid_images:
-        st.image(valid_images) # Simple image display, can be replaced with a slideshow component
+        # Use tabs to create a simple, clickable image gallery/slideshow
+        tab_titles = [f"Image {i+1}" for i in range(len(valid_images))]
+        tabs = st.tabs(tab_titles)
+        for i, tab in enumerate(tabs):
+            with tab:
+                st.image(valid_images[i], use_column_width='auto')
     else:
         st.image("https://via.placeholder.com/600x400.png?text=Image+Not+Available")
 
@@ -193,10 +199,21 @@ def show_product_dialog(product):
 
     if quantities:
         st.markdown("### Tiered Pricing")
-        pricing_df = pd.DataFrame({'Quantity': quantities, 'Price per item (USD)': prices})
-        st.table(pricing_df.set_index('Quantity').T)
+        
+        # Generate the HTML table cells for each row
+        qty_cells = "".join([f"<td style='text-align:center;'>{q}</td>" for q in quantities])
+        price_cells = "".join([f"<td style='text-align:center;'><strong>{p}</strong></td>" for p in prices])
 
-    st.html("<span class='big-dialog'></span>") # CSS hook for dialog width
+        # Construct the full HTML table with inline CSS
+        st.html(f"""
+        <style> .pricing-table {{ width: 100%; border-collapse: collapse; }} .pricing-table th, .pricing-table td {{ border: 1px solid #d3d3d3; padding: 10px; }} .pricing-table th {{ text-align: left; background-color: #f0f2f6; }} </style>
+        <table class="pricing-table">
+            <tbody>
+                <tr><th>Quantity</th>{qty_cells}</tr>
+                <tr><th>Price per item (USD)</th>{price_cells}</tr>
+            </tbody>
+        </table>
+        """)
 
 
 # --- Main App ---
