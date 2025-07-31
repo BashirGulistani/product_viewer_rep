@@ -192,7 +192,7 @@ st.markdown(
     """
 <style>
 div[data-testid="stDialog"] div[role="dialog"]:has(.big-dialog) {
-    width: 80vw;
+    width: 95vw;
 }
 </style>
 """,
