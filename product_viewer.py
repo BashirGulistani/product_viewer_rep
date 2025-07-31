@@ -7,6 +7,21 @@ import ast
 # --- Page Configuration (MUST be the first st command) ---
 st.set_page_config(layout="wide", page_title="Product Recommendations")
 
+
+st.markdown(
+    """
+<style>
+div[data-testid="stDialog"] > div[role="dialog"]:has(.big-dialog) {
+    width: 80vw;
+    max-width: 900px; /* Optional: set a max-width */
+    height: 90vh;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
 # --- Caching and Data Loading ---
 
 @st.cache_data
@@ -86,17 +101,7 @@ def render_image_slideshow(images, product_id):
 
 # --- Dialog Function (using the decorator pattern) ---
 
-st.markdown(
-    """
-<style>
-div[data-testid="stDialog"] div[role="dialog"]:has(.big-dialog) {
-    width: 80vw;
-    height: 80vh;
-}
-</style>
-""",
-    unsafe_allow_html=True,
-)
+
 
 
 @st.dialog("Product Details")
