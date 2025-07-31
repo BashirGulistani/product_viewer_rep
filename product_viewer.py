@@ -54,6 +54,18 @@ def render_color_swatches(hex_list_str):
         pass
     st.markdown(f'<div style="height: 30px;">{swatches_html}</div>', unsafe_allow_html=True)
 
+###
+
+def find_first_available_image(product):
+    """Iterates through image_url_1 to 5 and returns the first valid URL."""
+    for i in range(1, 6):
+        image_url = product.get(f"image_url_{i}")
+        if isinstance(image_url, str) and image_url.startswith("http"):
+            return image_url
+    # Return None if no valid image is found
+    return None
+
+
 
 def render_image_slideshow(images, product_id):
     """Renders a Swiper.js image slideshow with responsive images."""
@@ -170,15 +182,18 @@ else:
     if products_df.empty:
         st.error("Product details for the recommended IDs could not be found in the data file.")
     else:
-        cols = st.columns(3)
+        # Changed to 5 columns for a more compact grid
+        cols = st.columns(5)
         for index, product in products_df.iterrows():
-            with cols[index % 3]:
+            # Cycle through the 5 columns
+            with cols[index % 5]:
                 with st.container(border=True):
-                    image_url = product.get("image_url_1")
-                    if isinstance(image_url, str) and image_url.startswith("http"):
-                        st.image(image_url)
+                    # Find the first valid image to use as the thumbnail
+                    thumbnail_url = find_first_available_image(product)
+                    if thumbnail_url:
+                        st.image(thumbnail_url)
                     else:
-                        st.image("https://via.placeholder.com/600x400.png?text=Image+Not+Available")
+                        st.image("https://via.placeholder.com/400x400.png?text=No+Image")
 
                     st.markdown(f"**{product.get('productName', 'No Name')}**")
                     render_color_swatches(product.get('hexColor'))
@@ -190,6 +205,5 @@ else:
                     
                     st.write("") # Spacer
                     
-                    # Button now calls the decorated dialog function
                     if st.button("View Details", key=f"view_{product.get('productId')}", use_container_width=True):
                         show_product_dialog(product)
