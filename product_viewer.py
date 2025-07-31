@@ -7,21 +7,6 @@ import ast
 # --- Page Configuration (MUST be the first st command) ---
 st.set_page_config(layout="wide", page_title="Product Recommendations")
 
-
-st.markdown(
-    """
-<style>
-div[data-testid="stDialog"] > div[role="dialog"]:has(.big-dialog) {
-    width: 60vw;
-    max-width: 1900px; /* Optional: set a max-width */
-    height: 90vh;
-}
-</style>
-""",
-    unsafe_allow_html=True,
-)
-
-
 # --- Caching and Data Loading ---
 
 @st.cache_data
@@ -101,12 +86,21 @@ def render_image_slideshow(images, product_id):
 
 # --- Dialog Function (using the decorator pattern) ---
 
-
+st.markdown(
+    """
+<style>
+div[data-testid="stDialog"] div[role="dialog"]:has(.big-dialog) {
+    width: 80vw;
+    height: 80vh;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
 
 
 @st.dialog("Product Details")
 def show_product_dialog(product):
-    st.html("<span class='big-dialog'></span>")
     """Renders the full product details inside the dialog."""
     st.subheader(product.get("productName", "Unnamed Product"))
     images = [product.get(f'image_url_{i}') for i in range(1, 6)]
@@ -140,6 +134,7 @@ def show_product_dialog(product):
     if pricing_data:
         st.markdown("##### Tiered Pricing")
         st.dataframe(pd.DataFrame(pricing_data), use_container_width=True, hide_index=True)
+    st.html("<span class='big-dialog'></span>")
 
 # --- Main App ---
 logo_url = "https://raw.githubusercontent.com/BashirGulistani/product_viewer_rep/main/idYu324uEk_logos.png"
