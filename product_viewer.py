@@ -209,7 +209,11 @@ def show_product_dialog(product):
 
     # Image Slideshow Logic (assuming a helper function not shown for brevity)
     # Image Slideshow Logic
-        # Transposed pricing table
+
+    images = [product.get(f'image_url_{i}') for i in range(1, 6)]
+    render_image_slideshow(images, product.get("productId"))
+
+            # Transposed pricing table
     quantities = []
     prices = []
     for i in range(5):
@@ -236,8 +240,6 @@ def show_product_dialog(product):
             </tbody>
         </table>
         """)
-    images = [product.get(f'image_url_{i}') for i in range(1, 6)]
-    render_image_slideshow(images, product.get("productId"))
     
     st.divider()
     col1, col2 = st.columns(2)
