@@ -95,23 +95,40 @@ def find_first_available_image(product):
             return image_url
     return None # Return None if no valid image is found
 
+import webcolors
+import math
+
 def get_color_name(hex_code):
-    """Finds the nearest CSS3 color name for a given hex code."""
+    """
+    Finds the nearest CSS3 color name for a given hex code.
+    This version incorporates the optimization of comparing squared Euclidean distances.
+    """
     try:
+        # First, try for an exact match, which is most efficient.
         return webcolors.hex_to_name(hex_code).title()
     except ValueError:
         try:
+            # If no exact match, convert the input hex to an RGB tuple.
             requested_rgb = webcolors.hex_to_rgb(hex_code)
         except ValueError:
+            # Handle cases where the hex code is invalid.
             return "Unknown Color"
 
         min_distance_sq = float('inf')
         closest_name = "Unknown Color"
-        for name, rgb in webcolors.CSS3_NAMES_TO_HEX.items():
-            dist_sq = sum([(a - b) ** 2 for a, b in zip(requested_rgb, webcolors.hex_to_rgb(rgb))])
+
+        # Loop through all known CSS3 colors to find the closest one.
+        for name in webcolors.names("css3"):
+            current_rgb = webcolors.name_to_rgb(name)
+
+            # Calculate the squared Euclidean distance (more efficient).
+            dist_sq = sum([(a - b) ** 2 for a, b in zip(requested_rgb, current_rgb)])
+
+            # If this color is closer than the closest one found so far, update.
             if dist_sq < min_distance_sq:
                 min_distance_sq = dist_sq
                 closest_name = name
+
         return closest_name.title()
 
 
