@@ -175,6 +175,28 @@ product_ids = fetch_product_ids_from_github()
 
 
 
+###
+
+# --- Custom CSS for Equal Height Cards ---
+st.markdown("""
+<style>
+/* This targets the container created by st.columns to make them align */
+div[data-testid="stHorizontalBlock"] {
+    align-items: stretch;
+}
+/* This is our custom class for the product card */
+.product-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Aligns content vertically */
+    height: 100%; /* Makes all cards in a row take the same height */
+    border: 1px solid rgba(49, 51, 63, 0.2);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 if not product_ids:
     st.warning("Could not find any recommended products. Please generate a new list from the main app.")
@@ -182,10 +204,9 @@ else:
     product_ids_str = [str(pid) for pid in product_ids]
     products_df = df[df["productId"].astype(str).isin(product_ids_str)].copy()
 
-    # --- CHANGE: Pre-filter products to ensure they have at least one valid image ---
+    # Pre-filter products to ensure they have at least one valid image
     products_df['thumbnail_url'] = products_df.apply(find_first_available_image, axis=1)
     products_with_images_df = products_df.dropna(subset=['thumbnail_url']).copy()
-    # --- END CHANGE ---
 
     if products_with_images_df.empty:
         st.error("No products with valid images could be found from your recommendation list.")
@@ -193,25 +214,24 @@ else:
         # Create 5 columns for the grid
         cols = st.columns(5)
         
-        # Loop through only the products that have images
         for i, (index, product) in enumerate(products_with_images_df.iterrows()):
-            # Use the sequential index 'i' to cycle through the 5 columns
             with cols[i % 5]:
-                with st.container(border=True):
-                    # Use the pre-found thumbnail URL
-                    st.image(product['thumbnail_url'])
-
-                    st.markdown(f"**{product.get('productName', 'No Name')}**")
-                    render_color_swatches(product.get('hexColor'))
-                    st.caption(f"Item #{product.get('productId')}")
-                    
-                    price = product.get("product_price")
-                    price_text = f"As low as **${price:,.2f}**" if pd.notnull(price) else ""
-                    st.markdown(price_text)
-                                        
-                    if st.button("View Details", key=f"view_{product.get('productId')}", use_container_width=True):
-                        show_product_dialog(product)
+                # --- CHANGE: Wrap content in a custom div instead of st.container ---
+                st.markdown('<div class="product-card">', unsafe_allow_html=True)
                 
-                # --- CHANGE: Add a spacer OUTSIDE the container for more vertical space between rows ---
-                st.write("")
+                # Top part of the card (image and text)
+                st.image(product['thumbnail_url'])
+                st.markdown(f"**{product.get('productName', 'No Name')}**")
+                render_color_swatches(product.get('hexColor'))
+                st.caption(f"Item #{product.get('productId')}")
+                
+                price = product.get("product_price")
+                price_text = f"As low as **${price:,.2f}**" if pd.notnull(price) else ""
+                st.markdown(price_text)
+                
+                # Bottom part of the card (button)
+                if st.button("View Details", key=f"view_{product.get('productId')}", use_container_width=True):
+                    show_product_dialog(product)
+
+                st.markdown('</div>', unsafe_allow_html=True)
                 # --- END CHANGE ---
