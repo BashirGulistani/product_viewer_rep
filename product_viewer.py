@@ -45,19 +45,18 @@ def render_color_swatches(hex_list_str):
         hex_codes = ast.literal_eval(hex_list_str)
         if isinstance(hex_codes, list):
             for color in hex_codes:
-                # Handle multi-colors in one string like '#FFFFFF-#000000'
                 color_parts = re.split(r'[-/]', color)
                 for part in color_parts:
                     clean_part = part.strip()
                     if clean_part.startswith('#'):
                         swatches_html += f'<div style="width:22px; height:22px; background-color:{clean_part}; border-radius:50%; display:inline-block; margin:0 4px 4px 0; border:1px solid #eee;"></div>'
     except (ValueError, SyntaxError):
-        pass # Fail silently if data is malformed
+        pass
     st.markdown(f'<div style="height: 30px;">{swatches_html}</div>', unsafe_allow_html=True)
 
 
 def render_image_slideshow(images, product_id):
-    """Renders a Swiper.js image slideshow for the product details modal."""
+    """Renders a Swiper.js image slideshow."""
     if not images:
         st.image("https://via.placeholder.com/600x600.png?text=No+Image", use_column_width=True)
         return
@@ -85,8 +84,11 @@ def render_image_slideshow(images, product_id):
     </script>
     """, height=410)
 
-def render_product_details_modal(product):
-    """Renders the full product details inside the st.dialog modal."""
+# --- Dialog Function (using the decorator pattern) ---
+
+@st.dialog("Product Details")
+def show_product_dialog(product):
+    """Renders the full product details inside the dialog."""
     st.subheader(product.get("productName", "Unnamed Product"))
     images = [product.get(f'image_url_{i}') for i in range(1, 6)]
     images = [img for img in images if isinstance(img, str) and img.startswith("http")]
@@ -139,27 +141,18 @@ else:
     if products_df.empty:
         st.error("Product details for the recommended IDs could not be found in the data file.")
     else:
-        # Create a grid with 3 columns
         cols = st.columns(3)
         for index, product in products_df.iterrows():
             with cols[index % 3]:
-                # Each card is a container with a border
                 with st.container(border=True):
-                    #st.image(product.get("image_url_1", "https://via.placeholder.com/600"))
-                    # Get the image URL and validate it before displaying
                     image_url = product.get("image_url_1")
-                    
-                    # Only display if the URL is a string and looks like a valid web link
                     if isinstance(image_url, str) and image_url.startswith("http"):
                         st.image(image_url)
                     else:
-                        # Use a placeholder for missing or invalid (e.g., NaN) URLs
                         st.image("https://via.placeholder.com/600x400.png?text=Image+Not+Available")
+
                     st.markdown(f"**{product.get('productName', 'No Name')}**")
-                    
-                    # Display color swatches
                     render_color_swatches(product.get('hexColor'))
-                    
                     st.caption(f"Item #{product.get('productId')}")
                     
                     price = product.get("product_price")
@@ -168,8 +161,6 @@ else:
                     
                     st.write("") # Spacer
                     
-                    # Button to trigger the modal dialog
+                    # Button now calls the decorated dialog function
                     if st.button("View Details", key=f"view_{product.get('productId')}", use_container_width=True):
-                        # Use expanded=False for a floating modal window
-                        with st.dialog(f"Details for {product.get('productName')}", expanded=False):
-                            render_product_details_modal(product)
+                        show_product_dialog(product)
