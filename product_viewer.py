@@ -6,7 +6,11 @@ import ast
 from urllib.parse import quote
 
 # --- Page Configuration (MUST be the first st command) ---
-st.set_page_config(layout="wide", page_title="Product Recommendations")
+st.set_page_config(
+    layout="wide",
+    page_title="Product Recommendations",
+    initial_sidebar_state="expanded"
+)
 
 # --- Caching and Data Loading ---
 
