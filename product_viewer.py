@@ -162,5 +162,5 @@ else:
                     # Button to trigger the modal dialog
                     if st.button("View Details", key=f"view_{product.get('productId')}", use_container_width=True):
                         # Use expanded=False for a floating modal window
-                        with st.dialog(f"Details for {product.get('productName')}", expanded=False):
+                        with st.dialog(f"Details for {product.get('productName')}"):
                             render_product_details_modal(product)
