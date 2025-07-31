@@ -72,24 +72,39 @@ def find_first_available_image(product):
 import webcolors
 import math
 
+
 def get_color_name(hex_code):
-    """Finds the nearest CSS3 color name for a given hex code for the tooltip."""
+    """
+    Finds the nearest CSS3 color name for a given hex code.
+    This version incorporates the optimization of comparing squared Euclidean distances.
+    """
     try:
+        # First, try for an exact match, which is most efficient.
         return webcolors.hex_to_name(hex_code).title()
     except ValueError:
         try:
+            # If no exact match, convert the input hex to an RGB tuple.
             requested_rgb = webcolors.hex_to_rgb(hex_code)
-            min_distance = float('inf')
-            closest_name = "Unknown Color"
-            for name, key_hex in webcolors.css3_names_to_hex.items():
-                current_rgb = webcolors.hex_to_rgb(key_hex)
-                distance = math.sqrt(sum([(a - b) ** 2 for a, b in zip(requested_rgb, current_rgb)]))
-                if distance < min_distance:
-                    min_distance = distance
-                    closest_name = name
-            return closest_name.title()
         except ValueError:
+            # Handle cases where the hex code is invalid.
             return "Unknown Color"
+
+        min_distance_sq = float('inf')
+        closest_name = "Unknown Color"
+
+        # Loop through all known CSS3 colors to find the closest one.
+        for name in webcolors.names("css3"):
+            current_rgb = webcolors.name_to_rgb(name)
+            
+            # Calculate the squared Euclidean distance (more efficient).
+            dist_sq = sum([(a - b) ** 2 for a, b in zip(requested_rgb, current_rgb)])
+
+            # If this color is closer than the closest one found so far, update.
+            if dist_sq < min_distance_sq:
+                min_distance_sq = dist_sq
+                closest_name = name
+        
+        return closest_name.title()
 
 def render_image_slideshow(images, product_id):
     """Renders a Swiper.js image slideshow with responsive images."""
