@@ -209,31 +209,7 @@ def show_product_dialog(product):
 
     # Image Slideshow Logic (assuming a helper function not shown for brevity)
     # Image Slideshow Logic
-    images = [product.get(f'image_url_{i}') for i in range(1, 6)]
-    render_image_slideshow(images, product.get("productId"))
-    
-    st.divider()
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("### Features")
-        if desc := product.get("description"):
-            for sentence in re.split(r'(?<=[.!?])\s+', desc):
-                if sentence.strip():
-                    st.markdown(f"- {sentence.strip()}")
-        else:
-            st.markdown("- No features listed.")
-    with col2:
-        st.markdown("### Specifications")
-        if brand := product.get("productBrand"):
-            st.markdown(f"**Brand:** {brand}")
-        if material := product.get("primaryMaterial"):
-            st.markdown(f"**Material:** {material}")
-        if link := product.get("url_link"):
-            st.link_button("View on Supplier Website", link)
-
-    st.divider()
-
-    # Transposed pricing table
+        # Transposed pricing table
     quantities = []
     prices = []
     for i in range(5):
@@ -260,6 +236,31 @@ def show_product_dialog(product):
             </tbody>
         </table>
         """)
+    images = [product.get(f'image_url_{i}') for i in range(1, 6)]
+    render_image_slideshow(images, product.get("productId"))
+    
+    st.divider()
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("### Features")
+        if desc := product.get("description"):
+            for sentence in re.split(r'(?<=[.!?])\s+', desc):
+                if sentence.strip():
+                    st.markdown(f"- {sentence.strip()}")
+        else:
+            st.markdown("- No features listed.")
+    with col2:
+        st.markdown("### Specifications")
+        if brand := product.get("productBrand"):
+            st.markdown(f"**Brand:** {brand}")
+        if material := product.get("primaryMaterial"):
+            st.markdown(f"**Material:** {material}")
+        if link := product.get("url_link"):
+            st.link_button("View on Supplier Website", link)
+
+    st.divider()
+
+    
 
 
 # --- Main App ---
