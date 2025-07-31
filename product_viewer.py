@@ -37,7 +37,7 @@ def fetch_product_ids_from_github():
 # --- Helper Functions ---
 
 def render_color_swatches(hex_list_str):
-    """Generates and renders HTML for small, centered color swatches."""
+    """Generates and renders HTML for small, centered color swatches with tooltips."""
     swatches_html = ""
     if not isinstance(hex_list_str, str):
         return
@@ -49,10 +49,12 @@ def render_color_swatches(hex_list_str):
                 for part in color_parts:
                     clean_part = part.strip()
                     if clean_part.startswith('#'):
-                        swatches_html += f'<div style="width:22px; height:22px; background-color:{clean_part}; border-radius:50%; display:inline-block; margin:0 4px 4px 0; border:1px solid #eee;"></div>'
+                        # Get color name for the tooltip
+                        color_name = get_color_name(clean_part)
+                        # Add the 'title' attribute for the hover effect
+                        swatches_html += f'<div title="{color_name}" style="width:22px; height:22px; background-color:{clean_part}; border-radius:50%; display:inline-block; margin:0 4px 4px 0; border:1px solid #eee;"></div>'
     except (ValueError, SyntaxError):
         pass
-    # Added text-align: center to the wrapping div
     st.markdown(f'<div style="height: 30px; text-align: center;">{swatches_html}</div>', unsafe_allow_html=True)
 
 ###
@@ -67,6 +69,27 @@ def find_first_available_image(product):
     return None
 
 
+import webcolors
+import math
+
+def get_color_name(hex_code):
+    """Finds the nearest CSS3 color name for a given hex code for the tooltip."""
+    try:
+        return webcolors.hex_to_name(hex_code).title()
+    except ValueError:
+        try:
+            requested_rgb = webcolors.hex_to_rgb(hex_code)
+            min_distance = float('inf')
+            closest_name = "Unknown Color"
+            for name, key_hex in webcolors.css3_names_to_hex.items():
+                current_rgb = webcolors.hex_to_rgb(key_hex)
+                distance = math.sqrt(sum([(a - b) ** 2 for a, b in zip(requested_rgb, current_rgb)]))
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_name = name
+            return closest_name.title()
+        except ValueError:
+            return "Unknown Color"
 
 def render_image_slideshow(images, product_id):
     """Renders a Swiper.js image slideshow with responsive images."""
@@ -187,38 +210,28 @@ else:
     product_ids_str = [str(pid) for pid in product_ids]
     products_df = df[df["productId"].astype(str).isin(product_ids_str)].copy()
 
-    # Pre-filter products to ensure they have at least one valid image
     products_df['thumbnail_url'] = products_df.apply(find_first_available_image, axis=1)
     products_with_images_df = products_df.dropna(subset=['thumbnail_url']).copy()
 
     if products_with_images_df.empty:
         st.error("No products with valid images could be found from your recommendation list.")
     else:
-        # Create 5 columns for the grid
         cols = st.columns(5)
-        
-        # Loop through only the products that have images
         for i, (index, product) in enumerate(products_with_images_df.iterrows()):
-            # Use the sequential index 'i' to cycle through the 5 columns
             with cols[i % 5]:
                 with st.container(border=True):
-                    # Use the pre-found thumbnail URL
                     st.image(product['thumbnail_url'])
-
-                    # --- Center-aligned text elements ---
                     st.markdown(f"<p style='text-align:center; font-weight:bold;'>{product.get('productName', 'No Name')}</p>", unsafe_allow_html=True)
-                    
                     render_color_swatches(product.get('hexColor'))
-                    
                     st.markdown(f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{product.get('productId')}</p>", unsafe_allow_html=True)
-                    
+
+                    # --- CHANGE: Updated price styling ---
                     price = product.get("product_price")
-                    price_text = f"As low as <strong>${price:,.2f}</strong>" if pd.notnull(price) else ""
+                    price_text = f"As low as <strong style='font-size: 1.15em;'>${price:,.2f}</strong>" if pd.notnull(price) else ""
                     st.markdown(f"<p style='text-align:center;'>{price_text}</p>", unsafe_allow_html=True)
-                    # --- End of centered elements ---
+                    # --- END CHANGE ---
 
                     if st.button("View Details", key=f"view_{product.get('productId')}", use_container_width=True):
                         show_product_dialog(product)
                 
-                # Add a spacer OUTSIDE the container for more vertical space between rows
                 st.write("")
