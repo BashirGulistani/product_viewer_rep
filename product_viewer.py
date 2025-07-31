@@ -182,22 +182,24 @@ else:
     product_ids_str = [str(pid) for pid in product_ids]
     products_df = df[df["productId"].astype(str).isin(product_ids_str)].copy()
 
-    if products_df.empty:
-        st.error("Product details for the recommended IDs could not be found in the data file.")
+    # --- CHANGE: Pre-filter products to ensure they have at least one valid image ---
+    products_df['thumbnail_url'] = products_df.apply(find_first_available_image, axis=1)
+    products_with_images_df = products_df.dropna(subset=['thumbnail_url']).copy()
+    # --- END CHANGE ---
+
+    if products_with_images_df.empty:
+        st.error("No products with valid images could be found from your recommendation list.")
     else:
         # Create 5 columns for the grid
         cols = st.columns(5)
         
-        # CORRECTED: Use enumerate to get a sequential index 'i' for layout
-        for i, (index, product) in enumerate(products_df.iterrows()):
+        # Loop through only the products that have images
+        for i, (index, product) in enumerate(products_with_images_df.iterrows()):
             # Use the sequential index 'i' to cycle through the 5 columns
             with cols[i % 5]:
                 with st.container(border=True):
-                    thumbnail_url = find_first_available_image(product)
-                    if thumbnail_url:
-                        st.image(thumbnail_url)
-                    else:
-                        st.image("https://via.placeholder.com/400x400.png?text=No+Image")
+                    # Use the pre-found thumbnail URL
+                    st.image(product['thumbnail_url'])
 
                     st.markdown(f"**{product.get('productName', 'No Name')}**")
                     render_color_swatches(product.get('hexColor'))
@@ -206,8 +208,10 @@ else:
                     price = product.get("product_price")
                     price_text = f"As low as **${price:,.2f}**" if pd.notnull(price) else ""
                     st.markdown(price_text)
-                    
-                    st.write("") # Spacer
-                    
+                                        
                     if st.button("View Details", key=f"view_{product.get('productId')}", use_container_width=True):
                         show_product_dialog(product)
+                
+                # --- CHANGE: Add a spacer OUTSIDE the container for more vertical space between rows ---
+                st.write("")
+                # --- END CHANGE ---
