@@ -86,8 +86,22 @@ def render_image_slideshow(images, product_id):
 
 # --- Dialog Function (using the decorator pattern) ---
 
-@st.dialog("Product Details", width="large")
+st.markdown(
+    """
+<style>
+div[data-testid="stDialog"] div[role="dialog"]:has(.big-dialog) {
+    width: 80vw;
+    height: 80vh;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
+@st.dialog("Product Details")
 def show_product_dialog(product):
+    st.html("<span class='big-dialog'></span>")
     """Renders the full product details inside the dialog."""
     st.subheader(product.get("productName", "Unnamed Product"))
     images = [product.get(f'image_url_{i}') for i in range(1, 6)]
