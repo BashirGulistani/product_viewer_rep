@@ -145,7 +145,16 @@ else:
             with cols[index % 3]:
                 # Each card is a container with a border
                 with st.container(border=True):
-                    st.image(product.get("image_url_1", "https://via.placeholder.com/600"))
+                    #st.image(product.get("image_url_1", "https://via.placeholder.com/600"))
+                    # Get the image URL and validate it before displaying
+                    image_url = product.get("image_url_1")
+                    
+                    # Only display if the URL is a string and looks like a valid web link
+                    if isinstance(image_url, str) and image_url.startswith("http"):
+                        st.image(image_url)
+                    else:
+                        # Use a placeholder for missing or invalid (e.g., NaN) URLs
+                        st.image("https://via.placeholder.com/600x400.png?text=Image+Not+Available")
                     st.markdown(f"**{product.get('productName', 'No Name')}**")
                     
                     # Display color swatches
