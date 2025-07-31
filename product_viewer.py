@@ -131,6 +131,60 @@ def get_color_name(hex_code):
 
         return closest_name.title()
 
+def render_image_slideshow(images, product_id):
+    """Renders a large Swiper.js image slideshow with navigation arrows."""
+    
+    # Filter for valid image URLs
+    valid_images = [
+        img for img in images 
+        if isinstance(img, str) and img.startswith("http")
+    ]
+
+    if not valid_images:
+        st.image("https://via.placeholder.com/800x600.png?text=Image+Not+Available", use_column_width=True)
+        return
+
+    # Create a unique ID for the swiper instance
+    swiper_id = f"swiper-{product_id}"
+
+    # Generate the HTML for each image slide
+    slides_html = "".join(
+        f"""
+        <div class="swiper-slide">
+            <img src="{img}" style="width: 100%; height: auto; max-height: 500px; object-fit: contain;">
+        </div>
+        """ 
+        for img in valid_images
+    )
+    
+    # Set a fixed height for the component to prevent layout shifts
+    container_height = 550 
+
+    st.components.v1.html(f'''
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
+    <div class="swiper-container" id="{swiper_id}" style="height: {container_height}px; width: 100%;">
+        <div class="swiper-wrapper">{slides_html}</div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-prev" style="color: #0E3B53;"></div>
+        <div class="swiper-button-next" style="color: #0E3B53;"></div>
+    </div>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script>
+    new Swiper('#{swiper_id}', {{
+        loop: {str(len(valid_images) > 1).lower()},
+        pagination: {{
+            el: '.swiper-pagination',
+            clickable: true,
+        }},
+        navigation: {{
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        }},
+    }});
+    </script>
+    ''', height=container_height)
+
+
 
 # --- Dialog Function (using the decorator pattern) ---
 
@@ -154,8 +208,8 @@ def show_product_dialog(product):
     # Image Slideshow Logic (assuming a helper function not shown for brevity)
     # Image Slideshow Logic
     images = [product.get(f'image_url_{i}') for i in range(1, 6)]
-    valid_images = [img for img in images if isinstance(img, str) and img.startswith("http")]
-
+    render_image_slideshow(images, product.get("productId"))
+    
     if valid_images:
         # Use tabs to create a simple, clickable image gallery/slideshow
         tab_titles = [f"Image {i+1}" for i in range(len(valid_images))]
