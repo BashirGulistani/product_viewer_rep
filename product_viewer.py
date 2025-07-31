@@ -37,7 +37,7 @@ def fetch_product_ids_from_github():
 # --- Helper Functions ---
 
 def render_color_swatches(hex_list_str):
-    """Generates and renders HTML for small color swatches."""
+    """Generates and renders HTML for small, centered color swatches."""
     swatches_html = ""
     if not isinstance(hex_list_str, str):
         return
@@ -52,7 +52,8 @@ def render_color_swatches(hex_list_str):
                         swatches_html += f'<div style="width:22px; height:22px; background-color:{clean_part}; border-radius:50%; display:inline-block; margin:0 4px 4px 0; border:1px solid #eee;"></div>'
     except (ValueError, SyntaxError):
         pass
-    st.markdown(f'<div style="height: 30px;">{swatches_html}</div>', unsafe_allow_html=True)
+    # Added text-align: center to the wrapping div
+    st.markdown(f'<div style="height: 30px; text-align: center;">{swatches_html}</div>', unsafe_allow_html=True)
 
 ###
 
@@ -186,10 +187,9 @@ else:
     product_ids_str = [str(pid) for pid in product_ids]
     products_df = df[df["productId"].astype(str).isin(product_ids_str)].copy()
 
-    # --- CHANGE: Pre-filter products to ensure they have at least one valid image ---
+    # Pre-filter products to ensure they have at least one valid image
     products_df['thumbnail_url'] = products_df.apply(find_first_available_image, axis=1)
     products_with_images_df = products_df.dropna(subset=['thumbnail_url']).copy()
-    # --- END CHANGE ---
 
     if products_with_images_df.empty:
         st.error("No products with valid images could be found from your recommendation list.")
@@ -205,17 +205,20 @@ else:
                     # Use the pre-found thumbnail URL
                     st.image(product['thumbnail_url'])
 
-                    st.markdown(f"**{product.get('productName', 'No Name')}**")
+                    # --- Center-aligned text elements ---
+                    st.markdown(f"<p style='text-align:center; font-weight:bold;'>{product.get('productName', 'No Name')}</p>", unsafe_allow_html=True)
+                    
                     render_color_swatches(product.get('hexColor'))
-                    st.caption(f"Item #{product.get('productId')}")
+                    
+                    st.markdown(f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{product.get('productId')}</p>", unsafe_allow_html=True)
                     
                     price = product.get("product_price")
-                    price_text = f"As low as **${price:,.2f}**" if pd.notnull(price) else ""
-                    st.markdown(price_text)
-                                        
+                    price_text = f"As low as <strong>${price:,.2f}</strong>" if pd.notnull(price) else ""
+                    st.markdown(f"<p style='text-align:center;'>{price_text}</p>", unsafe_allow_html=True)
+                    # --- End of centered elements ---
+
                     if st.button("View Details", key=f"view_{product.get('productId')}", use_container_width=True):
                         show_product_dialog(product)
                 
-                # --- CHANGE: Add a spacer OUTSIDE the container for more vertical space between rows ---
+                # Add a spacer OUTSIDE the container for more vertical space between rows
                 st.write("")
-                # --- END CHANGE ---
