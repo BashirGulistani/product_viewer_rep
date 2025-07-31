@@ -303,33 +303,30 @@ product_ids = fetch_product_ids_from_github()
 
 ###
 
-# --- Initialize Session State for Favorites ---
 if 'favorites' not in st.session_state:
     st.session_state.favorites = []
 
-# --- Sidebar for Viewing Favorites ---
-with st.sidebar:
-    st.header(f"View Favorites ({len(st.session_state.favorites)})")
+# --- Sidebar for Viewing Favorites (Displays only when populated) ---
+if st.session_state.favorites:
+    with st.sidebar:
+        st.header(f"View Favorites ({len(st.session_state.favorites)})")
 
-    if not st.session_state.favorites:
-        st.write("You haven't added any favorites yet. Click the ❤️ on a product to add it.")
-    else:
         # Get details for favorited products
         favorited_products_df = df[df['productId'].astype(str).isin(st.session_state.favorites)]
 
         for _, product in favorited_products_df.iterrows():
             col1, col2 = st.columns([3, 1])
             with col1:
-                #st.write(product['productName'])
                 st.write(clean_product_name(product.get("productName", "Unnamed Product")))
             with col2:
+                # Button to remove item from sidebar
                 st.button("➖", key=f"remove_{product['productId']}", on_click=remove_from_favorites, args=[str(product['productId'])])
 
         st.divider()
         st.subheader("Prepare Email")
         st.write("Enter your details below to generate a pre-filled email in your own email client.")
         
-        user_email = st.text_input("Send To")
+        user_email = st.text_input("Your Email Address")
         company_name = st.text_input("Your Company Name")
 
         if st.button("Prepare Email"):
@@ -339,8 +336,7 @@ with st.sidebar:
                     f"Hello,\n\nHere is my list of favorited products from {company_name}:\n"
                 ]
                 for _, product in favorited_products_df.iterrows():
-                    cleaned_title2 = clean_product_name(product.get("productName", "Unnamed Product"))
-                    name = cleaned_title2
+                    name = product.get('productName', 'N/A')
                     pid = product.get('productId', 'N/A')
                     link = product.get('url_link', 'Not Available')
                     body_lines.append(f"• {name} (Item #{pid})")
