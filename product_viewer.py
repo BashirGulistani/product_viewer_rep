@@ -320,7 +320,8 @@ with st.sidebar:
         for _, product in favorited_products_df.iterrows():
             col1, col2 = st.columns([3, 1])
             with col1:
-                st.write(product['productName'])
+                #st.write(product['productName'])
+                st.write(clean_product_name(product.get("productName", "Unnamed Product")))
             with col2:
                 st.button("➖", key=f"remove_{product['productId']}", on_click=remove_from_favorites, args=[str(product['productId'])])
 
@@ -338,7 +339,8 @@ with st.sidebar:
                     f"Hello,\n\nHere is my list of favorited products from {company_name}:\n"
                 ]
                 for _, product in favorited_products_df.iterrows():
-                    name = product.get('productName', 'N/A')
+                    cleaned_title2 = clean_product_name(product.get("productName", "Unnamed Product"))
+                    name = cleaned_title2
                     pid = product.get('productId', 'N/A')
                     link = product.get('url_link', 'Not Available')
                     body_lines.append(f"• {name} (Item #{pid})")
