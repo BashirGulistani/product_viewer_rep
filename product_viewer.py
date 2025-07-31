@@ -383,7 +383,8 @@ else:
 
                     # Card content
                     st.image(product['thumbnail_url'])
-                    st.markdown(f"<p style='text-align:center; font-weight:bold;'>{product.get('productName', 'No Name')}</p>", unsafe_allow_html=True)
+                    cleaned_title2 = clean_product_name(product.get("productName", "Unnamed Product"))
+                    st.markdown(f"<p style='text-align:center; font-weight:bold;'>{cleaned_title2}</p>", unsafe_allow_html=True)
                     render_color_swatches(product.get('hexColor'))
                     st.markdown(f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{product_id_str}</p>", unsafe_allow_html=True)
                     
