@@ -153,6 +153,7 @@ def show_product_dialog(product):
 
     # Image Slideshow Logic (assuming a helper function not shown for brevity)
     # Image Slideshow Logic
+    images = [product.get(f'image_url_{i}') for i in range(1, 6)]
     valid_images = [img for img in images if isinstance(img, str) and img.startswith("http")]
 
     if valid_images:
