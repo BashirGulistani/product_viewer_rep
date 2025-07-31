@@ -329,7 +329,7 @@ with st.sidebar:
         st.subheader("Prepare Email")
         st.write("Enter your details below to generate a pre-filled email in your own email client.")
         
-        user_email = st.text_input("Your Email Address")
+        user_email = st.text_input("Send To")
         company_name = st.text_input("Your Company Name")
 
         if st.button("Prepare Email"):
