@@ -24,7 +24,7 @@ def load_data():
         st.error("The 'final_data.csv' file was not found. Please make sure it's in the same directory.")
         return pd.DataFrame()
 
-@st.cache_data
+
 def fetch_product_batches_from_github():
     """Fetches the recommended product batches from the GitHub JSON file."""
     # Updated URL to point to the new batch file
