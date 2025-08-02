@@ -268,13 +268,11 @@ def show_product_dialog(product):
             st.markdown(f"**Weight: ** {weight} Ib.")
             
         if labelsize := product.get("labelSizes"):
-            size_order = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"]
-        
-            sorted_label_sizes = sorted(labelsize, key=size_order.index)
-            
-            size_string = ", ".join(sorted_label_sizes)
-            
-            st.markdown(f"**Size Options:** {size_string}")         
+            if isinstance(labelsize, (list, tuple)):
+                size_order = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"]
+                sorted_label_sizes = sorted(labelsize, key=size_order.index)
+                size_string = ", ".join(sorted_label_sizes)
+                st.markdown(f"**Size Options:** {size_string}")        
         if link := product.get("url_link"):
             st.link_button("View on Supplier Website", link)
 
