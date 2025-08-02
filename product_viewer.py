@@ -265,7 +265,7 @@ def show_product_dialog(product):
             dimensions_str = " x ".join(dimension_parts)
             st.markdown(f"**Dimensions:** {dimensions_str}")
         if weight := product.get("weight"):
-            st.markdown(f"**Weight: ** {weight} Ib.")
+            st.markdown(f"**Weight:** {weight} Ib.")
             
         if labelsize := product.get("labelSizes"):
             if isinstance(labelsize, (list, tuple)):
