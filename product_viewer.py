@@ -51,7 +51,7 @@ def fetch_product_batches_from_github():
 # --- Helper Functions ---
 
 def render_color_swatches(hex_list_str):
-    """Generates and renders HTML for small, centered color swatches with tooltips."""
+    """Generates and renders HTML for larger, square color swatches with tooltips."""
     swatches_html = ""
     if not isinstance(hex_list_str, str):
         return
@@ -64,10 +64,14 @@ def render_color_swatches(hex_list_str):
                     clean_part = part.strip()
                     if clean_part.startswith('#'):
                         color_name = get_color_name(clean_part)
-                        swatches_html += f'<div title="{color_name}" style="width:22px; height:22px; background-color:{clean_part}; border-radius:50%; display:inline-block; margin:0 4px 4px 0; border:1px solid #eee;"></div>'
+                        # --- MODIFIED LINE ---
+                        swatches_html += f'<div title="{color_name}" style="width:30px; height:30px; background-color:{clean_part}; display:inline-block; margin:0 5px 5px 0; border:1px solid #ddd;"></div>'
     except (ValueError, SyntaxError):
-        pass # Ignore malformed color strings
-    st.markdown(f'<div style="height: 30px; text-align: center;">{swatches_html}</div>', unsafe_allow_html=True)
+        pass  # Ignore malformed color strings
+    
+    # --- MODIFIED LINE (increased height of container) ---
+    st.markdown(f'<div style="height: 40px;">{swatches_html}</div>', unsafe_allow_html=True)
+
 
 
 def add_to_favorites(product_id):
