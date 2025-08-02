@@ -353,6 +353,8 @@ else:
             st.info(f"No products with valid images could be found for the category: {category}")
             continue
 
+        products_to_display_df = products_to_display_df.sort_values(by="product_price")
+        
         # Display products in a single row that wraps
         num_columns = 5 # Set number of columns for the grid
         cols = st.columns(num_columns)
