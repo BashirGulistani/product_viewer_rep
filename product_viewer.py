@@ -224,7 +224,6 @@ def show_product_dialog(product):
             prices.append(f"${price_val:,.2f}")
 
     if quantities:
-        st.markdown("### Tiered Pricing")
         
         # Generate the HTML table cells for each row
         qty_cells = "".join([f"<td style='text-align:center;'>{q}</td>" for q in quantities])
@@ -257,6 +256,25 @@ def show_product_dialog(product):
             st.markdown(f"**Brand:** {brand}")
         if material := product.get("primaryMaterial"):
             st.markdown(f"**Material:** {material}")
+        dimension_parts = []
+        if height := product.get("height"):
+            dimension_parts.append(f'{height}"H')
+        if width := product.get("width"):
+            dimension_parts.append(f'{width}"W')
+        if dimension_parts:
+            dimensions_str = " x ".join(dimension_parts)
+            st.markdown(f"**Dimensions:** {dimensions_str}")
+        if weight := product.get("weight"):
+            st.markdown(f"**Weight: ** {weight} Ib.")
+            
+        if labelsize := product.get("labelSizes"):
+            size_order = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"]
+        
+            sorted_label_sizes = sorted(labelsize, key=size_order.index)
+            
+            size_string = ", ".join(sorted_label_sizes)
+            
+            st.markdown(f"**Size Options:** {size_string}")         
         if link := product.get("url_link"):
             st.link_button("View on Supplier Website", link)
 
