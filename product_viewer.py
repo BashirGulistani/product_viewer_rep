@@ -217,6 +217,59 @@ def show_product_dialog(product):
     images = [product.get(f'image_url_{i}') for i in range(1, 6)]
     render_image_slideshow(images, product.get("productId"))
 
+
+    #### ADDED
+
+    from streamlit_drawable_canvas import st_canvas
+    from PIL import Image
+    import requests
+    
+    st.markdown("### 🖼️ Try It With Your Logo")
+    st.markdown("Draw a rectangle on the product image to place your logo.")
+    
+    # Text input for brand name (or logo fetch logic)
+    brand_name = st.text_input("Enter Brand Name to Fetch Logo", key="brand_name_input")
+    
+    # Load the main image
+    image_url = product.get("image_url_1")
+    image = Image.open(requests.get(image_url, stream=True).raw)
+    
+    # Drawable canvas to select region
+    canvas_result = st_canvas(
+        fill_color="rgba(255, 165, 0, 0.3)",
+        stroke_width=2,
+        stroke_color="#FFAA00",
+        background_image=image,
+        update_streamlit=True,
+        height=image.height,
+        width=image.width,
+        drawing_mode="rect",
+        key="canvas_logo_position"
+    )
+    
+    # Handle drawing result and trigger logo overlay
+    if st.button("Generate Mockup with Logo"):
+        if canvas_result.json_data and canvas_result.json_data["objects"]:
+            rect = canvas_result.json_data["objects"][0]
+            x = rect["left"]
+            y = rect["top"]
+            w = rect["width"]
+            h = rect["height"]
+    
+            st.success(f"Selected area: x={int(x)}, y={int(y)}, width={int(w)}, height={int(h)}")
+    
+            # Call your own function with this info
+            #output_image = generate_mockup_with_logo(
+            #    product,
+            #    brand_name=brand_name,
+            #    coords=(x, y, w, h)
+            #)
+    
+            #st.image(output_image, caption="Preview with Your Logo", use_column_width=True)
+        else:
+            st.warning("Please draw a rectangle on the image to select logo placement.")
+
+
             # Transposed pricing table
     quantities = []
     prices = []
