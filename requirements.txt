@@ -2,3 +2,4 @@ streamlit >= 1.32.0
 streamlit-card
 webcolors
 streamlit-drawable-canvas
+streamlit.runtime.media_file_storage
