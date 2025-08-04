@@ -316,21 +316,22 @@ if st.session_state.favorites:
         
         st.divider()
         st.subheader("Prepare Email")
-        user_email = st.text_input("Your Email Address")
+        #to_email = st.text_input("Your Email Address")
+        to_email = 'jay@inkdstores.com'
         company_name = st.text_input("Your Company Name")
 
         if st.button("Prepare Email"):
-            if user_email and company_name and "@" in user_email:
+            if to_email and company_name and "@" in to_email:
                 body_lines = [f"Hello,\n\nHere is my list of favorited products from {company_name}:\n"]
                 for _, product in favorited_products_df.iterrows():
                     body_lines.append(f"• {product.get('productName', 'N/A')} (Item #{product.get('productId', 'N/A')})")
                     body_lines.append(f"  Link: {product.get('url_link', 'Not Available')}\n")
                 
                 subject = f"Product Inquiry from {company_name}"
-                mailto_link = f"mailto:{user_email}?subject={quote(subject)}&body={quote('\n'.join(body_lines))}"
+                mailto_link = f"mailto:{to_email}?subject={quote(subject)}&body={quote('\n'.join(body_lines))}"
                 st.markdown(f'<a href="{mailto_link}" target="_blank">Click Here to Open Email</a>', unsafe_allow_html=True)
             else:
-                st.warning("Please fill in a valid email and your company name.")
+                st.warning("Please provide your company name.")
 
 # --- Display Product Batches ---
 if not product_batches:
