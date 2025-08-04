@@ -220,21 +220,25 @@ def show_product_dialog(product):
 
     #### ADDED
 
-    from streamlit_drawable_canvas import st_canvas
+    import io
     from PIL import Image
     import requests
+    from streamlit_drawable_canvas import st_canvas
     
     st.markdown("### 🖼️ Try It With Your Logo")
     st.markdown("Draw a rectangle on the product image to place your logo.")
     
     # Text input for brand name (or logo fetch logic)
     brand_name = st.text_input("Enter Brand Name to Fetch Logo", key="brand_name_input")
+
     
-    # Load the main image
+    # Get image as raw bytes and reopen from BytesIO
     image_url = product.get("image_url_1")
-    image = Image.open(requests.get(image_url, stream=True).raw)
+    response = requests.get(image_url)
+    image_bytes = io.BytesIO(response.content)
+    image = Image.open(image_bytes).convert("RGB")
     
-    # Drawable canvas to select region
+    # Safe way to show canvas
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",
         stroke_width=2,
@@ -246,8 +250,6 @@ def show_product_dialog(product):
         drawing_mode="rect",
         key="canvas_logo_position"
     )
-    
-    # Handle drawing result and trigger logo overlay
     if st.button("Generate Mockup with Logo"):
         if canvas_result.json_data and canvas_result.json_data["objects"]:
             rect = canvas_result.json_data["objects"][0]
@@ -257,15 +259,7 @@ def show_product_dialog(product):
             h = rect["height"]
     
             st.success(f"Selected area: x={int(x)}, y={int(y)}, width={int(w)}, height={int(h)}")
-    
-            # Call your own function with this info
-            #output_image = generate_mockup_with_logo(
-            #    product,
-            #    brand_name=brand_name,
-            #    coords=(x, y, w, h)
-            #)
-    
-            #st.image(output_image, caption="Preview with Your Logo", use_column_width=True)
+
         else:
             st.warning("Please draw a rectangle on the image to select logo placement.")
 
