@@ -218,60 +218,6 @@ def show_product_dialog(product):
     render_image_slideshow(images, product.get("productId"))
 
 
-    #### ADDED
-
-    import io
-    from PIL import Image
-    import requests
-    from streamlit_drawable_canvas import st_canvas
-    
-    st.markdown("### 🖼️ Try It With Your Logo")
-    st.markdown("Draw a rectangle on the product image to place your logo.")
-    
-    # Text input for brand name (or logo fetch logic)
-    brand_name = st.text_input("Enter Brand Name to Fetch Logo", key="brand_name_input")
-
-    import streamlit.elements.image as image_module
-    from streamlit.runtime.media_file_storage import media_file_manager
-    
-    # Patch missing function
-    if not hasattr(image_module, "image_to_url"):
-        def image_to_url(image_data, width, clamp):
-            return media_file_manager.add(image_data, mime_type="image/png")
-        image_module.image_to_url = image_to_url
-
-    # Get image as raw bytes and reopen from BytesIO
-    image_url = product.get("image_url_1")
-    response = requests.get(image_url)
-    image_bytes = io.BytesIO(response.content)
-    image = Image.open(image_bytes).convert("RGB")
-    
-    # Safe way to show canvas
-    canvas_result = st_canvas(
-        fill_color="rgba(255, 165, 0, 0.3)",
-        stroke_width=2,
-        stroke_color="#FFAA00",
-        background_image=image,
-        update_streamlit=True,
-        height=image.height,
-        width=image.width,
-        drawing_mode="rect",
-        key="canvas_logo_position"
-    )
-    if st.button("Generate Mockup with Logo"):
-        if canvas_result.json_data and canvas_result.json_data["objects"]:
-            rect = canvas_result.json_data["objects"][0]
-            x = rect["left"]
-            y = rect["top"]
-            w = rect["width"]
-            h = rect["height"]
-    
-            st.success(f"Selected area: x={int(x)}, y={int(y)}, width={int(w)}, height={int(h)}")
-
-        else:
-            st.warning("Please draw a rectangle on the image to select logo placement.")
-
-
             # Transposed pricing table
     quantities = []
     prices = []
