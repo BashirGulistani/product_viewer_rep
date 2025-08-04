@@ -231,7 +231,15 @@ def show_product_dialog(product):
     # Text input for brand name (or logo fetch logic)
     brand_name = st.text_input("Enter Brand Name to Fetch Logo", key="brand_name_input")
 
+    import streamlit.elements.image as image_module
+    from streamlit.runtime.media_file_storage import media_file_manager
     
+    # Patch missing function
+    if not hasattr(image_module, "image_to_url"):
+        def image_to_url(image_data, width, clamp):
+            return media_file_manager.add(image_data, mime_type="image/png")
+        image_module.image_to_url = image_to_url
+
     # Get image as raw bytes and reopen from BytesIO
     image_url = product.get("image_url_1")
     response = requests.get(image_url)
