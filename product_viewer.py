@@ -70,7 +70,15 @@ def render_color_swatches(hex_list_str):
         pass  # Ignore malformed color strings
     
     # --- MODIFIED LINE (increased height of container) ---
-    st.markdown(f'<div style="height: 40px; text-align: center;">{swatches_html}</div>', unsafe_allow_html=True)
+    #st.markdown(f'<div style="height: 40px; text-align: center;">{swatches_html}</div>', unsafe_allow_html=True)
+    st.markdown(
+    f'''
+    <div style="min-height:56px; max-height:56px; overflow:hidden;">
+        {swatches_html}
+    </div>
+    ''',
+    unsafe_allow_html=True
+)
 
 
 
