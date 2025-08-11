@@ -19,7 +19,7 @@ st.set_page_config(
 def load_data():
     """Loads the product data from the CSV file."""
     try:
-        return pd.read_parquet('final_data_v2.csv')
+        return pd.read_csv('final_data_v2.csv')
     except FileNotFoundError:
         st.error("The 'final_data.csv' file was not found. Please make sure it's in the same directory.")
         return pd.DataFrame()
