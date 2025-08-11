@@ -73,7 +73,7 @@ def render_color_swatches(hex_list_str):
     #st.markdown(f'<div style="height: 40px; text-align: center;">{swatches_html}</div>', unsafe_allow_html=True)
     st.markdown(
     f'''
-    <div style="min-height:56px; max-height:56px; overflow:hidden;">
+    <div style="min-height:56px; max-height:56px; overflow:hidden; text-align: center;">
         {swatches_html}
     </div>
     ''',
