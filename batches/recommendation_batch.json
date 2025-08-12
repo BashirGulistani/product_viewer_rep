@@ -1,16 +1,12 @@
 {
-  "Backpacks": [
-    "SM-5903",
-    "SM-8203",
-    "SM-7062",
-    "BKUS011",
-    "BKUS015"
+  "Tote Bags": [
+    "30038",
+    "TBUS014"
+  ],
+  "Blankets": [
+    "MWSMP416"
   ],
   "T-Shirts": [
-    "STIC152",
-    "TSB013",
-    "TSB017",
-    "TSB058",
-    "TSB059"
+    "STIC152"
   ]
 }
