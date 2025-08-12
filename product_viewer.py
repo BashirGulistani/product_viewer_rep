@@ -5,6 +5,7 @@ import re
 import ast
 from urllib.parse import quote
 import webcolors
+from streamlit_extras.add_vertical_space import add_vertical_space
 
 # --- Page Configuration (MUST be the first st command) ---
 st.set_page_config(
@@ -420,7 +421,8 @@ else:
                             f"<div class='price' style='text-align: center;'>As low as <strong style='font-size:1.15em;'>${price_val:,.2f}</strong></div>",
                             unsafe_allow_html=True
                         )
-                        
+                    
+                    add_vertical_space(1)   
                     if st.button("View Details", key=f"view_{product_id_str}", use_container_width=True):
                         show_product_dialog(product)
 
