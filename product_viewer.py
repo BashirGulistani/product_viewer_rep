@@ -253,11 +253,12 @@ def show_product_dialog(product):
     quantities = []
     prices = []
     for i in range(5):
-        qty = product.get(f"ProductPrice_{i}_quantityMin")
-        price_val = product.get(f"ProductPrice_{i}_price")
-        if pd.notnull(qty) and pd.notnull(price_val):
-            quantities.append(f"{int(qty)}")
-            prices.append(f"${price_val:,.2f}")
+        qty_raw = pd.to_numeric(product.get(f"ProductPrice_{i}_quantityMin"), errors="coerce")
+        price_raw = pd.to_numeric(product.get(f"ProductPrice_{i}_price"), errors="coerce")
+        if pd.notnull(qty_raw) and pd.notnull(price_raw) and qty_raw > 0 and price_raw > 0:
+            quantities.append(f"{int(qty_raw)}")
+            prices.append(f"${price_raw:,.2f}")
+
 
     if quantities:
         
@@ -409,9 +410,16 @@ else:
                     render_color_swatches(product.get('hexColor'))
                     st.markdown(f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{product_id_str}</p>", unsafe_allow_html=True)
 
-                    price = product.get("product_price")
-                    price_text = f"As low as <strong style='font-size: 1.15em;'>${price:,.2f}</strong>" if pd.notnull(price) else ""
-                    st.markdown(f"<p style='text-align:center;'>{price_text}</p>", unsafe_allow_html=True)
+                    #price = product.get("product_price")
+                    #price_text = f"As low as <strong style='font-size: 1.15em;'>${price:,.2f}</strong>" if pd.notnull(price) else ""
+                    #st.markdown(f"<p style='text-align:center;'>{price_text}</p>", unsafe_allow_html=True)
+
+                    price_val = pd.to_numeric(p.get("product_price"), errors="coerce")
+                    if pd.notnull(price_val) and price_val > 0:
+                        st.markdown(
+                            f"<div class='price'>As low as <strong style='font-size:1.05em;'>${price_val:,.2f}</strong></div>",
+                            unsafe_allow_html=True
+                        )
 
                     if st.button("View Details", key=f"view_{product_id_str}", use_container_width=True):
                         show_product_dialog(product)
