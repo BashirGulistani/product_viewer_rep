@@ -144,57 +144,55 @@ def get_color_name(hex_code):
         return closest_name.title()
 
 def render_image_slideshow(images, product_id):
-    """Renders a large Swiper.js image slideshow with navigation arrows."""
-    
-    # Filter for valid image URLs
-    valid_images = [
-        img for img in images 
-        if isinstance(img, str) and img.startswith("http")
-    ]
-
+    valid_images = [i for i in images if isinstance(i, str) and i.startswith("http")]
     if not valid_images:
         st.image("https://via.placeholder.com/800x600.png?text=Image+Not+Available", use_column_width=True)
         return
 
-    # Create a unique ID for the swiper instance
-    swiper_id = f"swiper-{product_id}"
+    swiper_id = f"swiper_{product_id}"
+    container_height = 400    # taller = bigger images
+    max_width = 1100          # clamp width inside the (now wider) dialog
 
-    # Generate the HTML for each image slide
-    slides_html = "".join(
-        f"""
-        <div class="swiper-slide">
-            <img src="{img}" style="width: 100%; height: auto; max-height: 500px; object-fit: contain;">
-        </div>
-        """ 
-        for img in valid_images
-    )
-    
-    # Set a fixed height for the component to prevent layout shifts
-    container_height = 550 
+    slides_html = "".join(f'''
+      <div class="swiper-slide"><img src="{img}" /></div>
+    ''' for img in valid_images)
 
     st.components.v1.html(f'''
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
-    <div class="swiper-container" id="{swiper_id}" style="height: {container_height}px; width: 100%;">
-        <div class="swiper-wrapper">{slides_html}</div>
-        <div class="swiper-pagination"></div>
-        <div class="swiper-button-prev" style="color: #0E3B53;"></div>
-        <div class="swiper-button-next" style="color: #0E3B53;"></div>
-    </div>
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-    <script>
-    new Swiper('#{swiper_id}', {{
-        loop: {str(len(valid_images) > 1).lower()},
-        pagination: {{
-            el: '.swiper-pagination',
-            clickable: true,
-        }},
-        navigation: {{
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        }},
-    }});
-    </script>
-    ''', height=container_height)
+<link rel="stylesheet" href="https://unpkg.com/swiper@9/swiper-bundle.min.css"/>
+<style>
+  /* center and size the carousel inside the iframe */
+  #{swiper_id} {{
+    width: 100%;                /* fill iframe width */
+    max-width: {max_width}px;   /* clamp for readability */
+    height: {container_height}px;
+    margin: 0 auto;             /* center within iframe */
+  }}
+  #{swiper_id} .swiper-wrapper, #{swiper_id} .swiper-slide {{ height: 100%; }}
+  #{swiper_id} .swiper-slide {{
+    display:flex; align-items:center; justify-content:center; background:#fff;
+  }}
+  #{swiper_id} .swiper-slide img {{
+    max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block;
+  }}
+</style>
+
+<div class="swiper" id="{swiper_id}">
+  <div class="swiper-wrapper">{slides_html}</div>
+  <div class="swiper-pagination {swiper_id}-pagination"></div>
+  <div class="swiper-button-prev {swiper_id}-prev" style="color:#0E3B53;"></div>
+  <div class="swiper-button-next {swiper_id}-next" style="color:#0E3B53;"></div>
+</div>
+
+<script src="https://unpkg.com/swiper@9/swiper-bundle.min.js"></script>
+<script>
+  new Swiper('#{swiper_id}', {{
+    loop: {str(len(valid_images) > 1).lower()},
+    centeredSlides: true,
+    pagination: {{ el: '.{swiper_id}-pagination', clickable: true }},
+    navigation: {{ nextEl: '.{swiper_id}-next', prevEl: '.{swiper_id}-prev' }},
+  }});
+</script>
+''', height=container_height)
 
 
 
@@ -205,8 +203,8 @@ st.markdown(
 <style>
 /* Target the dialog container directly for robust styling */
 div[data-testid="stDialog"] > div > div[role="dialog"] {
-    width: 90vw;
-    max-width: 1200px;
+    width: 60vw;
+    max-width: 900px;
 }
 </style>
 """,
@@ -222,8 +220,16 @@ def show_product_dialog(product):
     # Image Slideshow Logic (assuming a helper function not shown for brevity)
     # Image Slideshow Logic
 
-    images = [product.get(f'image_url_{i}') for i in range(1, 6)]
-    render_image_slideshow(images, product.get("productId"))
+    #images = [product.get(f'image_url_{i}') for i in range(1, 6)]
+    #render_image_slideshow(images, product.get("productId"))
+    imgs = [product.get(f"image_url_{i}") for i in range(1, 6)]
+    imgs = [u for u in imgs if isinstance(u, str) and u.startswith("http")]
+    pid = str(product.get("productId", "0"))
+
+    # Center the carousel in the dialog
+    left, mid, right = st.columns([5, 12, 1])   # wider middle = centered
+    with mid:
+        render_image_slideshow(imgs, pid)      # your Swiper-based function
 
 
             # Transposed pricing table
@@ -290,7 +296,6 @@ def show_product_dialog(product):
             st.link_button("View on Supplier Website", link)
 
     st.divider()
-
     
 
 
