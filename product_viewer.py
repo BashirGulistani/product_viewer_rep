@@ -15,14 +15,13 @@ st.set_page_config(
 
 # --- Caching and Data Loading ---
 
-@st.cache_data
-def load_data():
+
+@st.cache_data(show_spinner=False)
+def load_data() -> pd.DataFrame:
     """Loads the product data from the CSV file."""
-    try:
-        return pd.read_csv('final_data_v2.csv')
-    except FileNotFoundError:
-        st.error("The 'final_data.csv' file was not found. Please make sure it's in the same directory.")
-        return pd.DataFrame()
+    df = pd.read_parquet('final_dataset_v2.parquet')
+    return df
+
 
 
 def fetch_product_batches_from_github():
