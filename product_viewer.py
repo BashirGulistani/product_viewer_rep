@@ -414,7 +414,7 @@ else:
                     #price_text = f"As low as <strong style='font-size: 1.15em;'>${price:,.2f}</strong>" if pd.notnull(price) else ""
                     #st.markdown(f"<p style='text-align:center;'>{price_text}</p>", unsafe_allow_html=True)
 
-                    price_val = pd.to_numeric(p.get("product_price"), errors="coerce")
+                    price_val = pd.to_numeric(product.get("product_price"), errors="coerce")
                     if pd.notnull(price_val) and price_val > 0:
                         st.markdown(
                             f"<div class='price'>As low as <strong style='font-size:1.05em;'>${price_val:,.2f}</strong></div>",
