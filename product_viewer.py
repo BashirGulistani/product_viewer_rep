@@ -417,7 +417,7 @@ else:
                     price_val = pd.to_numeric(product.get("product_price"), errors="coerce")
                     if pd.notnull(price_val) and price_val > 0:
                         st.markdown(
-                            f"<div class='price'>As low as <strong style='font-size:1.05em;'>${price_val:,.2f}</strong></div>",
+                            f"<div class='price'>As low as <strong style='font-size:1.15em;text-align:center;'>${price_val:,.2f}</strong></div>",
                             unsafe_allow_html=True
                         )
 
