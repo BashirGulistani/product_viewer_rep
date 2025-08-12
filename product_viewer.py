@@ -51,34 +51,52 @@ def fetch_product_batches_from_github():
 # --- Helper Functions ---
 
 def render_color_swatches(hex_list_str):
-    """Generates and renders HTML for larger, square color swatches with tooltips."""
+    def _norm_hex(s: str):
+        s = s.strip()
+        if not s.startswith('#'):
+            return None
+        h = s[1:]
+        # expand #RGB -> #RRGGBB
+        if len(h) == 3 and all(c in '0123456789abcdefABCDEF' for c in h):
+            h = ''.join(c*2 for c in h)
+        # accept #RRGGBB
+        if len(h) == 6 and all(c in '0123456789abcdefABCDEF' for c in h):
+            return '#' + h.lower()
+        return None
+
     swatches_html = ""
+    seen = set()  # track normalized hexes we've already added
+
     if not isinstance(hex_list_str, str):
         return
+
     try:
         hex_codes = ast.literal_eval(hex_list_str)
         if isinstance(hex_codes, list):
             for color in hex_codes:
-                color_parts = re.split(r'[-/]', color)
-                for part in color_parts:
-                    clean_part = part.strip()
-                    if clean_part.startswith('#'):
-                        color_name = get_color_name(clean_part)
-                        # --- MODIFIED LINE ---
-                        swatches_html += f'<div title="{color_name}" style="width:30px; height:30px; background-color:{clean_part}; display:inline-block; margin:0 5px 5px 0; border:1px solid #ddd;"></div>'
+                # split things like "#fff/#000 - #FF0000"
+                for part in re.split(r'[-/;,]\s*', str(color)):
+                    nh = _norm_hex(part)
+                    if not nh or nh in seen:
+                        continue
+                    seen.add(nh)
+                    color_name = get_color_name(nh)
+                    swatches_html += (
+                        f'<div title="{color_name}" '
+                        f'style="width:22px; height:22px; background-color:{nh}; '
+                        f'display:inline-block; margin:0 4px 4px 0; border:1px solid #ddd;"></div>'
+                    )
     except (ValueError, SyntaxError):
-        pass  # Ignore malformed color strings
-    
-    # --- MODIFIED LINE (increased height of container) ---
-    #st.markdown(f'<div style="height: 40px; text-align: center;">{swatches_html}</div>', unsafe_allow_html=True)
+        pass
+
     st.markdown(
-    f'''
-    <div style="min-height:56px; max-height:56px; overflow:hidden; text-align: center;">
-        {swatches_html}
-    </div>
-    ''',
-    unsafe_allow_html=True
-)
+        f'''
+        <div style="min-height:56px; max-height:56px; overflow:hidden; text-align:center;">
+            {swatches_html}
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
 
 
 
