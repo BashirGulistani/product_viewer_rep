@@ -420,7 +420,7 @@ else:
                         #    f"<div class='price'>As low as <strong style='font-size:1.15em;text-align:center;'>${price_val:,.2f}</strong></div>",
                         #    unsafe_allow_html=True
                         #)
-                        price_text = f"As low as <strong style='font-size: 1.15em;'>${price_val:,.2f}</strong>" if pd.notnull(price) else ""
+                        price_text = f"As low as <strong style='font-size: 1.15em;'>${price_val:,.2f}</strong>" if pd.notnull(price_val) else ""
                         st.markdown(f"<p style='text-align:center;'>{price_val:,.2f}</p>", unsafe_allow_html=True)
 
                     if st.button("View Details", key=f"view_{product_id_str}", use_container_width=True):
