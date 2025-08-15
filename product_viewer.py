@@ -16,6 +16,13 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+.title-inline{
+  display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+}
+.title-inline .title{ margin:0; }            /* you already style .title */
+.title-inline .meta{                         /* caption look */
+  font-size:.85em; opacity:.75; white-space:nowrap; margin:0;
+}
 /* same variables & layout helpers */
 :root { --card-h: 520px; }
 
@@ -397,7 +404,18 @@ if st.session_state.favorites:
         favorited_products_df = df[df['productId'].astype(str).isin(st.session_state.favorites)]
 
         for _, product in favorited_products_df.iterrows():            
-            st.write(clean_product_name(product.get("productName")))
+            title = clean_product_name(product.get("productName",""))
+            pid   = str(product.get("productId",""))
+            
+            st.markdown(
+                f"""
+                <div class="title-inline">
+                  <div class="title">{title}</div>
+                  <div class="meta">Item # {pid}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
         
         st.divider()
         #to_email = st.text_input("Your Email Address")
