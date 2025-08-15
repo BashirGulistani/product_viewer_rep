@@ -368,6 +368,76 @@ if st.session_state.favorites:
 
 product_batches = fetch_product_batches_from_github()
 
+
+# --- Normalize & globally dedupe the incoming JSON --------------------------
+def _normalize_batches(batches: dict):
+    """Return (favorites_map, others_map, subcats_map) where each map is:
+       {subcat_name: [str(productId), ...]} and empty entries removed."""
+    def _norm_map(m):
+        out = {}
+        for k, ids in (m or {}).items():
+            if not ids:
+                continue
+            # coerce to strings & de-dupe within the list preserving order
+            seen = set()
+            uniq = []
+            for pid in ids:
+                spid = str(pid)
+                if spid not in seen:
+                    seen.add(spid)
+                    uniq.append(spid)
+            if uniq:
+                out[str(k)] = uniq
+        return out
+
+    has_top = ("Favorites" in batches) or ("Others" in batches)
+    fav = _norm_map(batches.get("Favorites") if has_top else {})
+    oth = _norm_map(batches.get("Others") if has_top else {})
+    # everything else = subcategory buckets
+    sub = _norm_map({k: v for k, v in batches.items() if k not in ("Favorites", "Others")})
+    return fav, oth, sub
+
+def _dedupe_across_sections(fav_map, oth_map, sub_map):
+    """Remove any productId already emitted by a higher-priority section."""
+    seen = set()
+
+    def _strip_seen(m):
+        cleaned = {}
+        for subcat, ids in m.items():
+            keep = []
+            for pid in ids:
+                if pid not in seen:
+                    seen.add(pid)
+                    keep.append(pid)
+            if keep:
+                cleaned[subcat] = keep
+        return cleaned
+
+    fav_clean = _strip_seen(fav_map)
+    oth_clean = _strip_seen(oth_map)
+    sub_clean = _strip_seen(sub_map)
+    return fav_clean, oth_clean, sub_clean
+
+# 1) normalize incoming structure (supports either Favorites/Others or just subcats)
+fav_map, oth_map, subcats_map = _normalize_batches(product_batches)
+
+# 2) globally de-dupe in priority order: Favorites > Others > Subcategories
+fav_clean, oth_clean, sub_clean = _dedupe_across_sections(fav_map, oth_map, subcats_map)
+
+# 3) Build sections in the order you want to render
+sections = []
+if fav_clean: sections.append(("Favorites", fav_clean, True))   # emphasize=True if you want bold/labels
+if oth_clean: sections.append(("Others", oth_clean, False))
+if sub_clean: sections.append(("Categories", sub_clean, False))  # label for your subcategory block(s)
+
+# 4) Render
+if not sections:
+    st.warning("Could not find any usable products in the JSON.")
+else:
+    for title, subcat_map, emphasize in sections:
+        _render_section(title, subcat_map, emphasize=emphasize)
+
+
 def _coerce_id_list(v):
     """Return a list[str] of productIds."""
     if isinstance(v, (list, tuple, set)):
