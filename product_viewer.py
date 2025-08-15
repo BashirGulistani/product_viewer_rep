@@ -28,7 +28,7 @@ def load_data() -> pd.DataFrame:
 def fetch_product_batches_from_github():
     """Fetches the recommended product batches from the GitHub JSON file."""
     # Updated URL to point to the new batch file
-    api_url = "https://api.github.com/repos/BashirGulistani/product_viewer_rep/contents/batches/recommendation_batch.json"
+    api_url = "https://api.github.com/repos/BashirGulistani/product_viewer_rep/contents/batches/recommendation_bundle.json"
     headers = {"Accept": "application/vnd.github.v3.raw"}
 
     # Use GitHub token from secrets if available for private repos
