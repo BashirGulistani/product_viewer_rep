@@ -16,6 +16,24 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+.title-stack{
+  display:block;
+}
+.title-stack .title{
+  /* kill the global title spacing just for this spot */
+  min-height: 0 !important;
+  margin: 0 !important;
+  line-height: 1.12;          /* tight */
+  text-align: left;           /* left align */
+}
+.title-stack .pid{
+  margin: 0 !important;       /* zero gap under the name */
+  padding-left: 16px;         /* slight indent to the right */
+  line-height: 1.12;
+  font-size: 0.9em;
+  opacity: .75;               /* caption look */
+  text-align: left;
+}
 .title-inline{
   display:flex; align-items:baseline; justify-content:space-between; gap:8px;
 }
