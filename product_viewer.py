@@ -328,7 +328,7 @@ def show_product_dialog(product):
     pid = str(product.get("productId", "0"))
 
     # Center the carousel in the dialog
-    left, mid, right = st.columns([5, 15, 1])   # wider middle = centered
+    left, mid, right = st.columns([5, 20, 1])   # wider middle = centered
     with mid:
         render_image_slideshow(imgs, pid)      # your Swiper-based function
 
