@@ -470,8 +470,10 @@ def _render_product_grid(title_prefix, subcat_label, id_list):
     # grid
     num_columns = 5
     cols = st.columns(num_columns)
+    k = 1
     for i, (_, product) in enumerate(products_to_display_df.iterrows()):
-        key_suffix = f"{title_prefix}_{subcat_label}_{product.get('productId')}"
+        key_suffix = f"{title_prefix}_{subcat_label}_{product.get('productId')}_{k}"
+        k+=1
         with cols[i % num_columns]:
             with st.container(border=True):
                 pid = str(product.get("productId"))
