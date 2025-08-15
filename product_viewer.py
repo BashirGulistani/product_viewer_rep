@@ -521,7 +521,7 @@ def _render_product_grid(title_prefix, subcat_label, id_list):
         key_suffix = f"{title_prefix}_{subcat_label}_{product.get('productId')}_{k}"
         k+=1
         with cols[i % num_columns]:
-            with st.container(border=True):
+            with st.container(border=False):
                 pid = str(product.get("productId"))
 
                 # Favorite toggle (use unique keys to avoid collisions)
