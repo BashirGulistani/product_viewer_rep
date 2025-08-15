@@ -520,14 +520,6 @@ def _render_product_grid(title_prefix, subcat_label, id_list):
             with st.container(border=True):
                 pid = str(product.get("productId"))
 
-                # Favorite toggle (use unique keys to avoid collisions)
-                is_favorited = pid in st.session_state.favorites
-                if is_favorited:
-                    st.button("❤️ Remove", key=f"fav_rm_{key_suffix}", on_click=remove_from_favorites, args=[pid])
-                else:
-                    st.button("🤍 Favorite", key=f"fav_add_{key_suffix}", on_click=add_to_favorites, args=[pid])
-
-
                 #####
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
                 # image in a fixed-height frame
@@ -563,6 +555,12 @@ def _render_product_grid(title_prefix, subcat_label, id_list):
                 add_vertical_space(1)
                 if st.button("View Details", key=f"view_{key_suffix}", use_container_width=True):
                     show_product_dialog(product)
+                # Favorite toggle (use unique keys to avoid collisions)
+                is_favorited = pid in st.session_state.favorites
+                if is_favorited:
+                    st.button("Remove", key=f"fav_rm_{key_suffix}", on_click=remove_from_favorites, args=[pid])
+                else:
+                    st.button("Add to Favorite", key=f"fav_add_{key_suffix}", on_click=add_to_favorites, args=[pid])
 
 def _render_section(section_title, subcat_map, emphasize=False):
     """Render a whole section (Favorites/Others or a single-category block)."""
