@@ -32,8 +32,7 @@ def fetch_product_batches_from_github():
     headers = {"Accept": "application/vnd.github.v3.raw"}
 
     # Use GitHub token from secrets if available for private repos
-    if "github" in st.secrets and "token" in st.secrets["github"]:
-        headers["Authorization"] = f"Bearer {st.secrets['github']['token']}"
+    headers["Authorization"] = f"Bearer {st.secrets["GITHUB_TOKEN"]}"
 
     try:
         response = requests.get(api_url, headers=headers)
