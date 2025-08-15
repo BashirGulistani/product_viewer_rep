@@ -14,6 +14,50 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+st.markdown("""
+<style>
+/* same variables & layout helpers */
+:root { --card-h: 520px; }
+
+[data-testid="stHorizontalBlock"] { align-items: stretch; row-gap: 10px; }
+[data-testid="stHorizontalBlock"] [data-testid="column"] { padding-left:.25rem; padding-right:.25rem; }
+[data-testid="stHorizontalBlock"] [data-testid="column"] > div { display:flex; }
+
+/* Uniform card (works whether you wrap with .card OR rely on :has(.img-wrap)) */
+.card {
+  border: 1px solid #e8eaef; border-radius: 14px; padding: 10px; background:#fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  display:flex; flex-direction:column; height: var(--card-h); overflow:hidden;
+}
+
+/* If you didn't add .card, apply same look to any block that contains .img-wrap */
+[data-testid="stHorizontalBlock"] [data-testid="column"] > div:has(.img-wrap){
+  display:flex !important; flex-direction:column;
+  height: var(--card-h) !important; overflow:hidden;
+  border:1px solid #e8eaef; border-radius:14px; padding:10px; background:#fff;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+
+/* Image frame */
+.img-wrap {
+  height: 220px; display:flex; align-items:center; justify-content:center;
+  background:#fafafa; border:1px solid #f0f0f0; border-radius:10px; overflow:hidden;
+}
+.img-wrap img { max-height:100%; max-width:100%; object-fit:contain; }
+
+/* Title with fixed space (2 lines max) */
+.title {
+  min-height:48px; margin:18px 0 4px; text-align:center;
+  font: 500 13px/1.2 "Libre Franklin", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.meta { text-align:center; opacity:.7; font-size:.9em; }
+.price { text-align:center; margin-top:2px; }
+</style>
+""", unsafe_allow_html=True)
+
+
+
 # --- Caching and Data Loading ---
 
 
@@ -485,25 +529,38 @@ def _render_product_grid(title_prefix, subcat_label, id_list):
                 else:
                     st.button("🤍 Favorite", key=f"fav_add_{key_suffix}", on_click=add_to_favorites, args=[pid])
 
-                # Card content
-                st.image(product["thumbnail_url"])
-                cleaned_title = clean_product_name(product.get("productName"))
-                st.markdown(
-                    f"<p style='text-align:center; font-weight:bold; height: 3em; overflow: hidden;'>{cleaned_title}</p>",
-                    unsafe_allow_html=True
-                )
-                render_color_swatches(product.get("hexColor"))
-                st.markdown(
-                    f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{pid}</p>",
-                    unsafe_allow_html=True
-                )
 
+                #####
+                st.markdown("<div class='card'>", unsafe_allow_html=True)
+                # image in a fixed-height frame
+                thumb = product.get("thumbnail_url")
+                if thumb:
+                    st.markdown(f"<div class='img-wrap'><img src='{thumb}'></div>", unsafe_allow_html=True)
+                else:
+                    st.markdown("<div class='img-wrap'><img src='https://via.placeholder.com/400x300.png?text=No+Image'></div>", unsafe_allow_html=True)
+                
+                # title / meta / price exactly like the main page
+                title = clean_product_name(product.get("productName"))
+                st.markdown(f"<div class='title'>{title}</div>", unsafe_allow_html=True)
+                render_color_swatches(product.get('hexColor'))
+                pid = str(product.get('productId'))
+                st.markdown(f"<div class='meta'>Item #{pid}</div>", unsafe_allow_html=True)
+                
                 price_val = pd.to_numeric(product.get("product_price"), errors="coerce")
                 if pd.notnull(price_val) and price_val > 0:
                     st.markdown(
-                        f"<div class='price' style='text-align: center;'>As low as <strong style='font-size:1.15em;'>${price_val:,.2f}</strong></div>",
+                        f"<div class='price'>As low as <strong style='font-size:1.05em;'>${price_val:,.2f}</strong></div>",
                         unsafe_allow_html=True
                     )
+                
+                st.markdown("</div>", unsafe_allow_html=True)  # close .card
+
+
+
+
+                
+                # Card content
+
 
                 add_vertical_space(1)
                 if st.button("View Details", key=f"view_{key_suffix}", use_container_width=True):
