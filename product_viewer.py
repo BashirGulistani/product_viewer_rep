@@ -51,6 +51,23 @@ st.markdown("""
 }
 .meta { text-align:center; opacity:.7; font-size:.9em; }
 .price { text-align:center; margin-top:2px; }
+
+.stButton > button{
+  border-radius: 10px;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+  background: #0E3B53;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(15, 0, 75, 1);
+  transition: background .2s ease, box-shadow .2s ease, transform .02s ease;
+}
+.stButton > button:hover{
+  background: #0b2f42;   /* darker */
+  border-color: #0b2f42;
+  color: #fff;
+  box-shadow: none;
+  filter: none;
+}
 </style>
 """, unsafe_allow_html=True)
 
