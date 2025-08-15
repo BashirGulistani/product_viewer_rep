@@ -398,7 +398,6 @@ if st.session_state.favorites:
 
         for _, product in favorited_products_df.iterrows():            
             st.write(clean_product_name(product.get("productName")))
-            st.caption(f"Item # {product.get('productId', '')}")
         
         st.divider()
         #to_email = st.text_input("Your Email Address")
