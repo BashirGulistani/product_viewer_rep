@@ -448,8 +448,8 @@ def _normalize_batches(batches: dict):
         return out
 
     has_top = ("Favorites" in batches) or ("Others" in batches)
-    fav = _norm_map(batches.get("Recommended") if has_top else {})
-    oth = _norm_map(batches.get("More Options") if has_top else {})
+    fav = _norm_map(batches.get("Favorites") if has_top else {})
+    oth = _norm_map(batches.get("Others") if has_top else {})
     # everything else = subcategory buckets
     sub = _norm_map({k: v for k, v in batches.items() if k not in ("Favorites", "Others")})
     return fav, oth, sub
@@ -589,7 +589,7 @@ def _render_section(section_title, subcat_map, emphasize=False):
     for subcat_name in sorted(subcat_map.keys()):
         # For Favorites/Others, it’s nice to label sub-buckets
         if section_title in ("Favorites", "Others") and subcat_name != "All":
-            st.markdown(f"**{subcat_name}**")
+            #st.markdown(f"**{subcat_name}**")
         _render_product_grid(section_title, subcat_name, subcat_map[subcat_name])
     st.divider()
 
