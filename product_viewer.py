@@ -24,11 +24,7 @@ st.markdown("""
 [data-testid="stHorizontalBlock"] [data-testid="column"] > div { display:flex; }
 
 /* Uniform card (works whether you wrap with .card OR rely on :has(.img-wrap)) */
-.card {
-  border: 1px solid #e8eaef; border-radius: 14px; padding: 10px; background:#fff;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
-  display:flex; flex-direction:column; height: var(--card-h); overflow:hidden;
-}
+
 
 /* If you didn't add .card, apply same look to any block that contains .img-wrap */
 
@@ -521,7 +517,7 @@ def _render_product_grid(title_prefix, subcat_label, id_list):
         key_suffix = f"{title_prefix}_{subcat_label}_{product.get('productId')}_{k}"
         k+=1
         with cols[i % num_columns]:
-            with st.container(border=False):
+            with st.container(border=True):
                 pid = str(product.get("productId"))
 
                 # Favorite toggle (use unique keys to avoid collisions)
