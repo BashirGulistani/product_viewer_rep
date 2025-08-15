@@ -396,17 +396,9 @@ if st.session_state.favorites:
         st.header(f"View Favorites ({len(st.session_state.favorites)})")
         favorited_products_df = df[df['productId'].astype(str).isin(st.session_state.favorites)]
 
-        for _, product in favorited_products_df.iterrows():
-            title = clean_product_name(product.get("productName"))
-            pid   = str(product.get("productId", ""))
-            
-            st.markdown(
-                f"""
-                <div class="title">{title}</div>
-                <div class="meta" style="margin-top:4px;">Item # {pid}</div>
-                """,
-                unsafe_allow_html=True,
-            )
+        for _, product in favorited_products_df.iterrows():            
+            st.write(clean_product_name(product.get("productName")))
+            st.caption(f"Item # {product.get('productId', '')}")
         
         st.divider()
         #to_email = st.text_input("Your Email Address")
