@@ -401,7 +401,7 @@ if st.session_state.favorites:
             with col1:
                 st.write(clean_product_name(product.get("productName")))
             with col2:
-                st.button("➖", key=f"remove_{product['productId']}", on_click=remove_from_favorites, args=[str(product['productId'])])
+                st.button("-", key=f"remove_{product['productId']}", on_click=remove_from_favorites, args=[str(product['productId'])])
         
         st.divider()
         #to_email = st.text_input("Your Email Address")
@@ -448,8 +448,8 @@ def _normalize_batches(batches: dict):
         return out
 
     has_top = ("Favorites" in batches) or ("Others" in batches)
-    fav = _norm_map(batches.get("Favorites") if has_top else {})
-    oth = _norm_map(batches.get("Others") if has_top else {})
+    fav = _norm_map(batches.get("Recommended") if has_top else {})
+    oth = _norm_map(batches.get("More Options") if has_top else {})
     # everything else = subcategory buckets
     sub = _norm_map({k: v for k, v in batches.items() if k not in ("Favorites", "Others")})
     return fav, oth, sub
