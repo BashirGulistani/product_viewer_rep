@@ -400,8 +400,8 @@ if st.session_state.favorites:
             col1, col2 = st.columns([3, 1])
             with col1:
                 st.write(clean_product_name(product.get("productName")))
-            with col2:
-                st.button("-", key=f"remove_{product['productId']}", on_click=remove_from_favorites, args=[str(product['productId'])])
+            #with col2:
+            #    st.button("Remove", key=f"remove_{product['productId']}", on_click=remove_from_favorites, args=[str(product['productId'])])
         
         st.divider()
         #to_email = st.text_input("Your Email Address")
