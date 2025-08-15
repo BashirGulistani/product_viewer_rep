@@ -27,7 +27,7 @@ st.markdown("""
   text-align: left;           /* left align */
 }
 .title-stack .pid{
-  margin: 0 !important;       /* zero gap under the name */
+  margin: 0 0 10px 0;       /* zero gap under the name */
   padding-left: 16px;         /* slight indent to the right */
   line-height: 1.12;
   font-size: 0.9em;
@@ -420,7 +420,7 @@ if st.session_state.favorites:
     with st.sidebar:
         st.header(f"View Favorites ({len(st.session_state.favorites)})")
         favorited_products_df = df[df['productId'].astype(str).isin(st.session_state.favorites)]
-
+        number = 1
         for _, product in favorited_products_df.iterrows():            
             title = clean_product_name(product.get("productName", ""))
             pid   = str(product.get("productId", ""))
@@ -428,12 +428,13 @@ if st.session_state.favorites:
             st.markdown(
                 f"""
                 <div class="title-stack">
-                  <div class="title">{title}</div>
+                  <div class="title">({number}) {title}</div>
                   <div class="pid">Item # {pid}</div>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
+            number+=1
         
         st.divider()
         #to_email = st.text_input("Your Email Address")
