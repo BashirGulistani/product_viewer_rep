@@ -417,25 +417,6 @@ def _dedupe_across_sections(fav_map, oth_map, sub_map):
     sub_clean = _strip_seen(sub_map)
     return fav_clean, oth_clean, sub_clean
 
-# 1) normalize incoming structure (supports either Favorites/Others or just subcats)
-fav_map, oth_map, subcats_map = _normalize_batches(product_batches)
-
-# 2) globally de-dupe in priority order: Favorites > Others > Subcategories
-fav_clean, oth_clean, sub_clean = _dedupe_across_sections(fav_map, oth_map, subcats_map)
-
-# 3) Build sections in the order you want to render
-sections = []
-if fav_clean: sections.append(("Favorites", fav_clean, True))   # emphasize=True if you want bold/labels
-if oth_clean: sections.append(("Others", oth_clean, False))
-if sub_clean: sections.append(("Categories", sub_clean, False))  # label for your subcategory block(s)
-
-# 4) Render
-if not sections:
-    st.warning("Could not find any usable products in the JSON.")
-else:
-    for title, subcat_map, emphasize in sections:
-        _render_section(title, subcat_map, emphasize=emphasize)
-
 
 def _coerce_id_list(v):
     """Return a list[str] of productIds."""
@@ -541,36 +522,25 @@ def _render_section(section_title, subcat_map, emphasize=False):
         _render_product_grid(section_title, subcat_name, subcat_map[subcat_name])
     st.divider()
 
-if not product_batches:
-    st.warning("Could not find any recommended products. Please generate a new list from the main app.")
+
+
+
+
+# 1) normalize incoming structure (supports either Favorites/Others or just subcats)
+fav_map, oth_map, subcats_map = _normalize_batches(product_batches)
+
+# 2) globally de-dupe in priority order: Favorites > Others > Subcategories
+fav_clean, oth_clean, sub_clean = _dedupe_across_sections(fav_map, oth_map, subcats_map)
+
+# 3) Build sections in the order you want to render
+sections = []
+if fav_clean: sections.append(("Favorites", fav_clean, True))   # emphasize=True if you want bold/labels
+if oth_clean: sections.append(("Others", oth_clean, False))
+if sub_clean: sections.append(("Categories", sub_clean, False))  # label for your subcategory block(s)
+
+# 4) Render
+if not sections:
+    st.warning("Could not find any usable products in the JSON.")
 else:
-    # Build an ordered list of sections to render
-    sections = []
-
-    # 1) Specials on top if present
-    if isinstance(product_batches, dict):
-        for special in ("Favorites", "Others"):
-            if special in product_batches:
-                m = _as_subcat_map(product_batches[special])
-                if m:
-                    sections.append((special, m, True))  # True = emphasize header
-
-    # 2) Remaining top-level keys treated as subcategories from JSON
-    if isinstance(product_batches, dict):
-        for k, v in product_batches.items():
-            if k in ("Favorites", "Others", "meta"):
-                continue
-            # support either list of ids or nested dict of subcats -> ids
-            subcat_map = _as_subcat_map(v)
-            if not subcat_map:
-                continue
-            # here, title should be the JSON key (a subcategory name)
-            sections.append((str(k), subcat_map, False))
-
-    # 3) Render all sections in order
-    if not sections:
-        st.info("No usable products found in the JSON.")
-    else:
-        for title, subcat_map, emphasize in sections:
-            _render_section(title, subcat_map, emphasize=emphasize)
-
+    for title, subcat_map, emphasize in sections:
+        _render_section(title, subcat_map, emphasize=emphasize)
