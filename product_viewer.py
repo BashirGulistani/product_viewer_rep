@@ -580,14 +580,15 @@ def _render_product_grid(title_prefix, subcat_label, id_list):
 
 def _render_section(section_title, subcat_map, emphasize=False):
     """Render a whole section (Favorites/Others or a single-category block)."""
-    if emphasize:
-        #st.header(section_title)
-        if section_title == "Favorites":
-            st.header("Recommended")
-        if section_title == "Others":
-            st.header("More Options")
-    else:
-        st.subheader(section_title)
+    key = str(section_title).strip().lower()
+    title_map = {
+        "favorites": "Recommended",
+        "others": "More Options",
+    }
+    display_title = title_map.get(key, section_title)
+
+    # pick heading level
+    (st.header if emphasize else st.subheader)(display_title)
 
     # Show each subcategory inside this section (sorted for consistency)
     for subcat_name in sorted(subcat_map.keys()):
