@@ -588,7 +588,7 @@ def _render_section(section_title, subcat_map, emphasize=False):
     # Show each subcategory inside this section (sorted for consistency)
     for subcat_name in sorted(subcat_map.keys()):
         # For Favorites/Others, it’s nice to label sub-buckets
-        if section_title in ("Favorites", "Others") and subcat_name != "All":
+        #if section_title in ("Favorites", "Others") and subcat_name != "All":
             #st.markdown(f"**{subcat_name}**")
         _render_product_grid(section_title, subcat_name, subcat_map[subcat_name])
     st.divider()
