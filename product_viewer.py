@@ -31,7 +31,9 @@ st.markdown("""
 }
 
 /* If you didn't add .card, apply same look to any block that contains .img-wrap */
-[data-testid="stHorizontalBlock"] [data-testid="column"] > div:has(.img-wrap){
+
+
+[data-testid="stHorizontalBlock"] [data-testid="column"] > div:has(.img-wrap):not(:has(.card)){
   display:flex !important; flex-direction:column;
   height: var(--card-h) !important; overflow:hidden;
   border:1px solid #e8eaef; border-radius:14px; padding:10px; background:#fff;
