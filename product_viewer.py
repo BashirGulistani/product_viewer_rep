@@ -331,7 +331,6 @@ st.markdown("Here are the product recommendations based on your request, grouped
 st.divider()
 
 df = load_data()
-product_batches = fetch_product_batches_from_github()
 
 # --- Sidebar for Viewing Favorites ---
 if st.session_state.favorites:
@@ -366,64 +365,143 @@ if st.session_state.favorites:
                 st.warning("Please provide your company name.")
 
 # --- Display Product Batches ---
+
+product_batches = fetch_product_batches_from_github()
+
+def _coerce_id_list(v):
+    """Return a list[str] of productIds."""
+    if isinstance(v, (list, tuple, set)):
+        return [str(x) for x in v]
+    # single value fallback
+    return [str(v)] if pd.notna(v) else []
+
+def _as_subcat_map(value):
+    """
+    Normalize a value into {subcat: [ids...]}.
+    - dict -> keep keys as subcats (values coerced to list of ids)
+    - list -> single bucket 'All'
+    - other -> empty
+    """
+    if isinstance(value, dict):
+        out = {}
+        for k, v in value.items():
+            ids = _coerce_id_list(v)
+            if ids:
+                out[str(k)] = ids
+        return out
+    elif isinstance(value, (list, tuple, set)):
+        ids = _coerce_id_list(value)
+        return {"All": ids} if ids else {}
+    return {}
+
+def _render_product_grid(title_prefix, subcat_label, id_list):
+    """Render a single subcategory grid."""
+    if not id_list:
+        return
+
+    # Filter df and keep only rows with a valid thumbnail
+    products_df = df[df["productId"].astype(str).isin([str(i) for i in id_list])].copy()
+    if "thumbnail_url" not in products_df.columns:
+        products_df["thumbnail_url"] = products_df.apply(find_first_available_image, axis=1)
+    else:
+        # backfill if any missing
+        products_df.loc[products_df["thumbnail_url"].isna(), "thumbnail_url"] = (
+            products_df[products_df["thumbnail_url"].isna()].apply(find_first_available_image, axis=1)
+        )
+
+    products_to_display_df = products_df.dropna(subset=["thumbnail_url"]).copy()
+    if products_to_display_df.empty:
+        st.info(f"No products with valid images for: {subcat_label}")
+        return
+
+    # your existing sort
+    products_to_display_df = products_to_display_df.sort_values(by="product_price", na_position="last")
+
+    # grid
+    num_columns = 5
+    cols = st.columns(num_columns)
+    for i, (_, product) in enumerate(products_to_display_df.iterrows()):
+        key_suffix = f"{title_prefix}_{subcat_label}_{product.get('productId')}"
+        with cols[i % num_columns]:
+            with st.container(border=True):
+                pid = str(product.get("productId"))
+
+                # Favorite toggle (use unique keys to avoid collisions)
+                is_favorited = pid in st.session_state.favorites
+                if is_favorited:
+                    st.button("❤️ Remove", key=f"fav_rm_{key_suffix}", on_click=remove_from_favorites, args=[pid])
+                else:
+                    st.button("🤍 Favorite", key=f"fav_add_{key_suffix}", on_click=add_to_favorites, args=[pid])
+
+                # Card content
+                st.image(product["thumbnail_url"])
+                cleaned_title = clean_product_name(product.get("productName"))
+                st.markdown(
+                    f"<p style='text-align:center; font-weight:bold; height: 3em; overflow: hidden;'>{cleaned_title}</p>",
+                    unsafe_allow_html=True
+                )
+                render_color_swatches(product.get("hexColor"))
+                st.markdown(
+                    f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{pid}</p>",
+                    unsafe_allow_html=True
+                )
+
+                price_val = pd.to_numeric(product.get("product_price"), errors="coerce")
+                if pd.notnull(price_val) and price_val > 0:
+                    st.markdown(
+                        f"<div class='price' style='text-align: center;'>As low as <strong style='font-size:1.15em;'>${price_val:,.2f}</strong></div>",
+                        unsafe_allow_html=True
+                    )
+
+                add_vertical_space(1)
+                if st.button("View Details", key=f"view_{key_suffix}", use_container_width=True):
+                    show_product_dialog(product)
+
+def _render_section(section_title, subcat_map, emphasize=False):
+    """Render a whole section (Favorites/Others or a single-category block)."""
+    if emphasize:
+        st.header(section_title)
+    else:
+        st.subheader(section_title)
+
+    # Show each subcategory inside this section (sorted for consistency)
+    for subcat_name in sorted(subcat_map.keys()):
+        # For Favorites/Others, it’s nice to label sub-buckets
+        if section_title in ("Favorites", "Others") and subcat_name != "All":
+            st.markdown(f"**{subcat_name}**")
+        _render_product_grid(section_title, subcat_name, subcat_map[subcat_name])
+    st.divider()
+
 if not product_batches:
     st.warning("Could not find any recommended products. Please generate a new list from the main app.")
 else:
-    for category, product_ids in product_batches.items():
-        if not product_ids:
-            continue
+    # Build an ordered list of sections to render
+    sections = []
 
-        # Display category headline
-        st.subheader(category)
+    # 1) Specials on top if present
+    if isinstance(product_batches, dict):
+        for special in ("Favorites", "Others"):
+            if special in product_batches:
+                m = _as_subcat_map(product_batches[special])
+                if m:
+                    sections.append((special, m, True))  # True = emphasize header
 
-        # Filter the main DataFrame for products in the current category
-        product_ids_str = [str(pid) for pid in product_ids]
-        products_df = df[df["productId"].astype(str).isin(product_ids_str)].copy()
-        
-        products_df['thumbnail_url'] = products_df.apply(find_first_available_image, axis=1)
-        products_to_display_df = products_df.dropna(subset=['thumbnail_url']).copy()
+    # 2) Remaining top-level keys treated as subcategories from JSON
+    if isinstance(product_batches, dict):
+        for k, v in product_batches.items():
+            if k in ("Favorites", "Others", "meta"):
+                continue
+            # support either list of ids or nested dict of subcats -> ids
+            subcat_map = _as_subcat_map(v)
+            if not subcat_map:
+                continue
+            # here, title should be the JSON key (a subcategory name)
+            sections.append((str(k), subcat_map, False))
 
-        if products_to_display_df.empty:
-            st.info(f"No products with valid images could be found for the category: {category}")
-            continue
+    # 3) Render all sections in order
+    if not sections:
+        st.info("No usable products found in the JSON.")
+    else:
+        for title, subcat_map, emphasize in sections:
+            _render_section(title, subcat_map, emphasize=emphasize)
 
-        products_to_display_df = products_to_display_df.sort_values(by="product_price")
-        
-        # Display products in a single row that wraps
-        num_columns = 5 # Set number of columns for the grid
-        cols = st.columns(num_columns)
-        for i, (index, product) in enumerate(products_to_display_df.iterrows()):
-            with cols[i % num_columns]:
-                with st.container(border=True):
-                    product_id_str = str(product.get('productId'))
-                    is_favorited = product_id_str in st.session_state.favorites
-                    
-                    # Favorite button logic
-                    if is_favorited:
-                        st.button("❤️ Remove", key=f"fav_{product_id_str}", on_click=remove_from_favorites, args=[product_id_str])
-                    else:
-                        st.button("🤍 Favorite", key=f"fav_{product_id_str}", on_click=add_to_favorites, args=[product_id_str])
-
-                    # Card content
-                    st.image(product['thumbnail_url'])
-                    cleaned_title = clean_product_name(product.get("productName"))
-                    st.markdown(f"<p style='text-align:center; font-weight:bold; height: 3em; overflow: hidden;'>{cleaned_title}</p>", unsafe_allow_html=True)
-                    render_color_swatches(product.get('hexColor'))
-                    st.markdown(f"<p style='text-align:center; opacity:0.7; font-size:0.9em;'>Item #{product_id_str}</p>", unsafe_allow_html=True)
-
-                    #price = product.get("product_price")
-                    #price_text = f"As low as <strong style='font-size: 1.15em;'>${price:,.2f}</strong>" if pd.notnull(price) else ""
-                    #st.markdown(f"<p style='text-align:center;'>{price_val:,.2f}</p>", unsafe_allow_html=True)
-                    
-                    price_val = pd.to_numeric(product.get("product_price"), errors="coerce")
-                    if pd.notnull(price_val) and price_val > 0:
-                        st.markdown(
-                            f"<div class='price' style='text-align: center;'>As low as <strong style='font-size:1.15em;'>${price_val:,.2f}</strong></div>",
-                            unsafe_allow_html=True
-                        )
-                    
-                    add_vertical_space(1)   
-                    if st.button("View Details", key=f"view_{product_id_str}", use_container_width=True):
-                        show_product_dialog(product)
-
-        st.divider() # Add a line after each category's products
