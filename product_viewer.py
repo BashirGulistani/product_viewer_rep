@@ -422,14 +422,14 @@ if st.session_state.favorites:
         favorited_products_df = df[df['productId'].astype(str).isin(st.session_state.favorites)]
 
         for _, product in favorited_products_df.iterrows():            
-            title = clean_product_name(product.get("productName",""))
-            pid   = str(product.get("productId",""))
+            title = clean_product_name(product.get("productName", ""))
+            pid   = str(product.get("productId", ""))
             
             st.markdown(
                 f"""
-                <div class="title-inline">
+                <div class="title-stack">
                   <div class="title">{title}</div>
-                  <div class="meta">Item # {pid}</div>
+                  <div class="pid">Item # {pid}</div>
                 </div>
                 """,
                 unsafe_allow_html=True
