@@ -584,7 +584,7 @@ def _render_section(section_title, subcat_map, emphasize=False):
         #st.header(section_title)
         if section_title == "Favorites":
             st.header("Recommended")
-        elif section_title == "Others":
+        if section_title == "Others":
             st.header("More Options")
     else:
         st.subheader(section_title)
