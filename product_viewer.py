@@ -439,7 +439,7 @@ if st.session_state.favorites:
         st.divider()
         #to_email = st.text_input("Your Email Address")
         to_email = 'jay@inkdstores.com'
-        company_name = st.text_input("Your Company Name", placeholder="Company")
+        company_name = st.text_input(placeholder="Your Company Name")
 
         if st.button("Submit"):
             if to_email and company_name and "@" in to_email:
