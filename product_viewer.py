@@ -439,9 +439,9 @@ if st.session_state.favorites:
         st.divider()
         #to_email = st.text_input("Your Email Address")
         to_email = 'jay@inkdstores.com'
-        company_name = st.text_input("Your Company Name")
+        company_name = st.text_input("Your Company Name", placeholder="Company")
 
-        if st.button("Add to Inquiry"):
+        if st.button("Submit"):
             if to_email and company_name and "@" in to_email:
                 body_lines = [f"Hello,\n\nHere is my list of favorited products from {company_name}:\n"]
                 for _, product in favorited_products_df.iterrows():
@@ -609,7 +609,7 @@ def _render_product_grid(title_prefix, subcat_label, id_list):
                 if is_favorited:
                     st.button("Remove", key=f"fav_rm_{key_suffix}", on_click=remove_from_favorites, args=[pid], use_container_width=True)
                 else:
-                    st.button("Add to Inquiry", key=f"fav_add_{key_suffix}", on_click=add_to_favorites, args=[pid],use_container_width=True)
+                    st.button("Add to Kit", key=f"fav_add_{key_suffix}", on_click=add_to_favorites, args=[pid],use_container_width=True)
 
 def _render_section(section_title, subcat_map, emphasize=False):
     """Render a whole section (Favorites/Others or a single-category block)."""
