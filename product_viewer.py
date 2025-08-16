@@ -615,6 +615,8 @@ def _render_product_grid(title_prefix, subcat_label, id_list):
                 else:
                     st.button("Add to Kit", key=f"fav_add_{key_suffix}", on_click=add_to_favorites, args=[pid],use_container_width=True)
 
+
+
 def _render_section(section_title, subcat_map, emphasize=False):
     """Render a whole section (Favorites/Others or a single-category block)."""
     key = str(section_title).strip().lower()
@@ -622,6 +624,7 @@ def _render_section(section_title, subcat_map, emphasize=False):
         "favorites": "Recommended",
         "others": "More Options",
     }
+    # Use .get() with a default value to handle any section_title gracefully
     display_title = title_map.get(key, section_title)
 
     # pick heading level
@@ -629,13 +632,15 @@ def _render_section(section_title, subcat_map, emphasize=False):
 
     # Show each subcategory inside this section (sorted for consistency)
     for subcat_name in sorted(subcat_map.keys()):
-        # For Favorites/Others, it’s nice to label sub-buckets
-        if section_title in ("Favorites", "Others") and subcat_name != "All":
+        
+        # MODIFIED PART:
+        # Always show the subcategory name as a label, unless it's a special "All" bucket.
+        # This now works for "Favorites", "Others", AND direct category blocks.
+        if subcat_name != "All":
             st.markdown(f"**{subcat_name}**")
+            
         _render_product_grid(section_title, subcat_name, subcat_map[subcat_name])
     st.divider()
-
-
 
 
 
