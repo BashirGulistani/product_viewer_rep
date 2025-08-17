@@ -105,6 +105,20 @@ st.markdown("""
 def load_data() -> pd.DataFrame:
     """Loads the product data from the CSV file."""
     df = pd.read_parquet('final_dataset_v2.parquet')
+    df = df.drop_duplicates(subset=['productId'], keep='first')
+
+    bad_brands_pattern = (
+        r'\b('
+        r'primeline|prime line|pcna|gemline|hubpen|'
+        r'cutter(?:\s*&|\s+and\s+)buck|'
+        r'goldbond(?:\s+inc)?|'
+        r'imprint|scrub\s+authority|'
+        r'stop\s*n\s*go|stopngo'
+        r')\b'
+    )
+
+    # Filter the DataFrame
+    df = df[~df['productBrand'].str.contains(bad_brands_pattern, case=False, na=False, regex=True)]
     return df
 
 
