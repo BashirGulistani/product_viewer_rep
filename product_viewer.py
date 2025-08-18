@@ -379,7 +379,8 @@ def show_product_dialog(product):
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("### Features")
-        if desc := product.get("description"):
+        #if desc := product.get("description"):
+        if (desc := product.get("description")) and desc.lower() != "nan":
             for sentence in re.split(r'(?<=[.!?])\s+', desc):
                 if sentence.strip():
                     st.markdown(f"- {sentence.strip()}")
@@ -387,28 +388,35 @@ def show_product_dialog(product):
             st.markdown("- No features listed.")
     with col2:
         st.markdown("### Specifications")
-        if brand := product.get("productBrand"):
+        #if brand := product.get("productBrand"):
+        if (brand := product.get("productBrand")) and brand.lower() != "nan":
             st.markdown(f"**Brand:** {brand}")
-        if material := product.get("primaryMaterial"):
+        #if material := product.get("primaryMaterial"):
+        if (material := product.get("primaryMaterial")) and material.lower() != "nan":
             st.markdown(f"**Material:** {material}")
         dimension_parts = []
-        if height := product.get("height"):
+        if (height := product.get("height")) and height.lower() != "nan":
+        #if height := product.get("height"):
             dimension_parts.append(f'{height}"H')
-        if width := product.get("width"):
+        #if width := product.get("width"):
+        if (width := product.get("width")) and width.lower() != "nan":
             dimension_parts.append(f'{width}"W')
         if dimension_parts:
             dimensions_str = " x ".join(dimension_parts)
             st.markdown(f"**Dimensions:** {dimensions_str}")
-        if weight := product.get("weight"):
+        #if weight := product.get("weight"):
+        if (weight := product.get("weight")) and weight.lower() != "nan":
             st.markdown(f"**Weight:** {weight} Ib.")
             
-        if labelsize := product.get("labelSizes"):
+        #if labelsize := product.get("labelSizes"):
+        if (labelsize := product.get("labelSizes")) and labelsize.lower() != "nan":
             if isinstance(labelsize, (list, tuple)):
                 size_order = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"]
                 sorted_label_sizes = sorted(labelsize, key=size_order.index)
                 size_string = ", ".join(sorted_label_sizes)
                 st.markdown(f"**Size Options:** {size_string}")        
-        if link := product.get("url_link"):
+        #if link := product.get("url_link"):
+        if (link := product.get("url_link")) and link.lower() != "nan":
             st.link_button("View on Supplier Website", link)
 
     st.divider()
