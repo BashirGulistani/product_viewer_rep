@@ -390,7 +390,7 @@ def show_product_dialog(product):
     with col2:
         st.markdown("### Specifications")
         #if brand := product.get("productBrand"):
-        if (brand := product.get("productBrand")) and brand.lower() != "nan":
+        if (brand := product.get("productBrand")) and brand.lower() != "nan" and brand != "-":
             st.markdown(f"**Brand:** {brand}")
         #if material := product.get("primaryMaterial"):
         if (material := product.get("primaryMaterial")) and material.lower() != "nan":
@@ -402,16 +402,25 @@ def show_product_dialog(product):
                 (isinstance(height, str) and height.lower() == "nan")
             )
         ):
-        #if height := product.get("height"):
             dimension_parts.append(f'{height}"H')
-        #if width := product.get("width"):
-        if (width := product.get("width")) and width.lower() != "nan":
+
+        if (
+            (width := product.get("width")) is not None and not (
+                (isinstance(width, float) and math.isnan(width)) or
+                (isinstance(width, str) and width.lower() == "nan")
+            )
+        ):
             dimension_parts.append(f'{width}"W')
         if dimension_parts:
             dimensions_str = " x ".join(dimension_parts)
             st.markdown(f"**Dimensions:** {dimensions_str}")
-        #if weight := product.get("weight"):
-        if (weight := product.get("weight")) and weight.lower() != "nan":
+
+        if (
+            (weight := product.get("weight")) is not None and not (
+                (isinstance(weight, float) and math.isnan(weight)) or
+                (isinstance(weight, str) and weight.lower() == "nan")
+            )
+        ):
             st.markdown(f"**Weight:** {weight} Ib.")
             
         #if labelsize := product.get("labelSizes"):
