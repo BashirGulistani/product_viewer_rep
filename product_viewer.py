@@ -6,6 +6,7 @@ import ast
 from urllib.parse import quote
 import webcolors
 from streamlit_extras.add_vertical_space import add_vertical_space
+import math
 
 # --- Page Configuration (MUST be the first st command) ---
 st.set_page_config(
@@ -395,7 +396,12 @@ def show_product_dialog(product):
         if (material := product.get("primaryMaterial")) and material.lower() != "nan":
             st.markdown(f"**Material:** {material}")
         dimension_parts = []
-        if (height := product.get("height")) and height.lower() != "nan":
+        if (
+            (height := product.get("height")) is not None and not (
+                (isinstance(height, float) and math.isnan(height)) or
+                (isinstance(height, str) and height.lower() == "nan")
+            )
+        ):
         #if height := product.get("height"):
             dimension_parts.append(f'{height}"H')
         #if width := product.get("width"):
